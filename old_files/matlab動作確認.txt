@@ -1,0 +1,6 @@
+(A) sshist.m 動作確認　内藤 20170816
+(B) hist_np_v1.m 修正待ち 内藤20170816
+(C) sskernel_rate.m 動作確認 内藤 20170813
+(D) sskernel_ref_rate.m 修正待ち 内藤 20170813
+(E) BayesRR 動作確認 内藤 20170816
+(F) HMM.m 評価結果が違う? 内藤 20170816

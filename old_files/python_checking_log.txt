@@ -1,0 +1,34 @@
+﻿(A) SS：エラー 20170823 以下エラーメッセージ
+
+SS(spike_time); 
+Traceback (most recent call last): 
+
+  File "<ipython-input-9-424e66bc5592>", line 1, in <module> 
+    SS(spike_time); 
+
+  File "/Users/nakamurakazuki/GitHub/gattai/python/SS_v1.py", line 24, in SS 
+    cost = cost_av(spike_times, onset, offset, bin_num, 10) 
+
+  File "/Users/nakamurakazuki/GitHub/gattai/python/SS_v1.py", line 46, in cost_av 
+    TT = np.hstack([spike_times, spike_times + (offset - onset)]) 
+
+TypeError: can only concatenate list (not "float") to list 
+
+エラーメッセージここまで
+
+SS: コード修正 内藤 20170824
+
+(B) OS：動作確認 20170823
+
+
+(C) KDE：動作確認 20170823
+
+
+(D) KDERB：動作確認 20170823
+
+
+(E) BRE：動作確認 20170823
+
+
+(F) HMM：動作確認 20170823
+

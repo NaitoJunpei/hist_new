@@ -1,0 +1,22 @@
+.button {
+    font:8.8pt Arial;
+    font-weight: bold;
+    margin-left: 6;
+    margin-right: 0;
+}
+    
+.buttons {
+    width: 800;
+    text-align: right;
+}
+
+.buttons>a {
+text-decoration: none;
+}
+
+.info {
+    font-size: 10pt;
+    margin-bottom: 0px;
+    float: left;
+    margin-left: 20;
+}

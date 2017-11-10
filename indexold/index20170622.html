@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<meta name="GENERATOR" content="JustSystems Homepage Builder Version 18.0.6.0 for Windows" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<link rel="stylesheet" href="main.css" type="text/css" />
+<script src="d3.v3.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="mt.js"></script>
+<script type="text/javascript" src="bayes_funcs.js"></script>
+<script type="text/javascript" src="hmm_funcs.js"></script>
+<script type="text/javascript" src="main.js"></script>
+
+<title>HISTOGRAMS</title>
+</head>
+<body onload="ResetData(); Main();" style="font-family:Optima,Arial">
+<div style="width:920" align="left">
+  <table>
+    <tbody>
+      <tr>
+        <td height="33" bgcolor="#ccccff" width="800"><font size="+2" face="Arial">Toolbox for constructing the best histograms </font> </td>
+      </tr>
+    </tbody>
+  </table>
+  <!-- Header --><br />
+  <table>
+    <tbody>
+      <tr>
+        <td bgcolor="#ffffcc" width="800"><font size="2pt" face="Arial">These tools provide the best histogram, kernel density estimation, Bayesian
+        estimator, and Hidden Markov model for a given series of event times. Paste
+        or upload the event times, listed in order of increasing time, separated
+        by a comma or a space. Your data will not leave your computer, because
+        the computation is carried out on your computer. The theory applied here
+        for the purpose of optimizing the estimators can be found in the references.</font></td>
+      </tr>
+    </tbody>
+  </table>
+  <br />
+  
+  <form name="data"><font size="2pt" face="Arial"><font size="3"><strong>1. </strong></font>You can paste your data here, or &#160; <input type="button" style="font:10.5pt Arial;" value="replace it with another sample," onclick="RandomData();Main();" /> or &#160; <input type="file" id="selfile" style="display:none;" />
+<input type="button" value="upload your data." style="font:10.5pt Arial;" onclick="document.getElementById('selfile').click();" />
+
+<script>
+var obj1 = document.getElementById("selfile");
+//ダイアログでファイルが選択された時
+obj1.addEventListener("change",function(evt){
+  var file = evt.target.files;
+  //FileReaderの作成
+  var reader = new FileReader();
+  //テキスト形式で読み込む
+  reader.readAsText(file[0]);
+  
+  //読込終了後の処理
+  reader.onload = function(ev){
+  //テキストエリアに表示する
+  document.data.spikes.value = reader.result;
+  Main();
+  }
+},false);
+</script>
+
+<br />
+  <font size = "2pt">&nbsp;&nbsp;&nbsp;&nbsp;<textarea name="spikes" rows="3" cols="120" style="font-size:9.5pt"></textarea><br />
+  <br />
+  </font><font size="3"><strong>2. </strong></font><input type="button" style="font:10.5pt Arial;" value="Estimate the firing rate." onclick="Main();" />
+</font>
+  <div id="loading" style="font-size:10pt; display:inline-block; visibility:hidden"><font size="2pt" face="Arial"><img src="loading.gif" />processing...</font></div>
+  <font size="2pt" face="Arial"><br />
+  <font size="2pt">&#160;&#160;&#160;&#160;&#160;(A) Histogram: L2 risk minimization <a href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/papersPDF/shino2007NeCo.pdf" target="_blank">[Reference 1]</a>. </font></font><a href="http://176.32.89.45/~hideaki/res/histogram.html" target="_blank"><font size="2pt" face="Arial"><font size="2pt"><font face="Arial"><font size="2pt">(Related site)</font></font><br />
+  </font></font></a>
+  <div id="graph_SS" width="800" height="60"></div>
+  <div id="raster_SS" width="800" height="10"></div>
+    <div id="optimal_SS" class="info"></div>
+  <div class="buttons">
+    <INPUT class="button" type="button" value="data sheet" onclick="OutputResults_SS()" />
+    <INPUT class="button" type="button" value="more detail" onclick="location.href='http://www.ton.scphys.kyoto-u.ac.jp/~shino/toolbox/sshist/hist.html'" />
+    <a href="./matlab/sshist.m" download="sshist.m">
+      <INPUT class="button" type="button" value="matlab code" /></a>
+    <a href="./python/SS.py" download="SS.py">
+      <INPUT class="button" type="button" value="python code" /></a>
+  </div>
+
+  <font size="2pt" face="Arial"><font size="2pt">&#160;&#160;&#160;&#160;&#160;(B) Histogram: L2 risk minimization for non-Poisson
+  spike trains <a href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/papersPDF/shino2011NeCo_histogram.pdf" target="_blank">[Reference 2]</a>.<br />
+  </font></font>
+  <div id="graph_OS" width="800" height="60"></div>
+  <div id="raster_OS" width="800" height="10"></div>
+    <div id="optimal_OS" class="info"></div>
+    <div class="buttons">
+      <INPUT class="button" type="button" value="data sheet" onclick="OutputResults_OS()">
+      <INPUT class="button" type="button" value="more detail" onclick="location.href='http://www.ton.scphys.kyoto-u.ac.jp/~shino/toolbox/oshist/hist.html'">
+      <a href="./matlab/hist_np.m" download="hist_np.m">
+	<INPUT class="button" type="button" value="matlab code" /></a>
+    <a href="./python/OS.py" download="OS.py">
+      <INPUT class="button" type="button" value="python code" /></a>
+    </div>
+
+  <font size="2pt" face="Arial"><font size="2pt">&#160;&#160;&#160;&#160;&#160;(C) Kernel density estimation: L2 risk minimization <a href="https://link.springer.com/article/10.1007%2Fs10827-009-0180-4" target="_blank">[Reference 3]</a>.<br />
+  </font></font>
+  <div id="graph_Kernel" width="800" height="60"></div>
+  <div id="raster_Kernel" width="800" height="10"></div>
+    <div id="optimal_Kernel" class="info"></div>
+    <div class="buttons">
+      <INPUT class="button" type="button" value="data sheet" onclick="OutputResults_Kernel()" />
+      <INPUT class="button" type="button" value="more detail" onclick="location.href='http://www.ton.scphys.kyoto-u.ac.jp/~shino/toolbox/sskernel/kernel.html'" />
+      <a href="./matlab/sskernel.m" download="sskernel.m">
+	<INPUT class="button" type="button" value="matlab code" /></a>
+    <a href="./python/KDE.py" download="KDE.py">
+      <INPUT class="button" type="button" value="python code" /></a>
+    </div>
+
+  <font size="2pt" face="Arial"><font size="2pt">&#160;&#160;&#160;&#160;&#160;(D) Kernel density estimation: L2 risk minimization,
+  with <a href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/toolbox/reflectedkernel/reflectedkernel.html" target="_blank">[reflection boundary]</a>.<br />
+  </font></font>
+  <div id="graph_Kernel2" width="800" height="60"></div>
+  <div id="raster_Kernel2" width="800" height="10"></div>
+    <div id="optimal_Kernel2" class="info"></div>
+    <div class="buttons">
+      <INPUT class="button" type="button" value="data sheet" onclick="OutputResults_Kernel2()" />
+      <INPUT class="button" type="button" value="more detail" onclick="location.href='http://www.ton.scphys.kyoto-u.ac.jp/~shino/toolbox/reflectedkernel/reflectedkernel.html'" />
+      <a href='./matlab/sskernel_ref.m' download="sskernel_ref.m"><INPUT class="button" type="button" value="matlab code" /></a>
+    <a href="./python/KDERB.py" download="KDERB.py">
+      <INPUT class="button" type="button" value="python code" /></a>
+  </div>
+
+  <font size="2pt" face="Arial">&#160;&#160;&#160;&#160;&#160;(E) Bayesian rate estimation <a href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/papersPDF/shino2005JPhysA.pdf" target="_blank">[Reference 4]</a> <a href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/papersPDF/shino2009NeCo.pdf" target="_blank">[Reference 5]</a>. </font><a href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/toolbox/ssNeCo09/page_SULAB2.html" target="_blank"><font size="2pt" face="Arial">(Estimating rate and irregularity)</font></a><br />
+  <div id="graph_Bayes" width="800" height="60"></div>
+  <div id="raster_Bayes" width="800" height="10"></div>
+  <div class="buttons">
+    <INPUT class="button" type="button" value="data sheet" onclick="OutputResults_Bayes()" />
+    <INPUT class="button" type="button" value="more detail" onclick="location.href='http://www.ton.scphys.kyoto-u.ac.jp/~shino/toolbox/ssBayes/bayes.html'" />
+    <a href="./matlab/BayesRR.zip" download="BayesRR.zip">
+      <INPUT class="button" type="button" value="matlab code" /></a>
+    <a href="./python/BRE.py" download="BRE.py">
+      <INPUT class="button" type="button" value="python code" /></a>
+  </div>
+  
+  <font size="2pt" face="Arial"><font size="2pt">&#160;&#160;&#160;&#160;&#160;(F) Two-state Hidden Markov Model <a href="https://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.022705" target="_blank">[Reference 6]</a>.<br />
+  </font></font>
+  <div id="graph_HMM" width="800" height="60"></div>
+  <div id="raster_HMM" width="800" height="10"></div>
+  <div class="buttons">
+    <INPUT class="button" type="button" value="data sheet" onclick="OutputResults_HMM()" />
+    <INPUT class="button" type="button" value="more detail" onclick="location.href='http://www.ton.scphys.kyoto-u.ac.jp/~shino/toolbox/msHMM/HMM.html'" />
+    <a href="" download="HMM.m">
+      <INPUT class="button" type="button" value="matlab code" /></a>
+    <a href="./python/HMM.py" download="HMM.py">
+      <INPUT class="button" type="button" value="python code" /></a>
+  </div>
+  <font size="2pt" face="Arial"><font size="2pt"><br />
+  <!--<font face="Arial Black" size=3><strong>3. Output data sheet.</strong></font>&nbsp;&nbsp;
+<INPUT class="button" type="button" value="Click" onclick="OutputResults()"><br>
+</FORM>
+--></font></font>
+  <hr width="920" align="left" />
+  <font size="2pt" face="Arial">Computation time:
+</font>
+<div id="time">
+</div>
+  <hr width="920" align="left" />
+
+  <font size="2pt" face="Arial"><br />
+  </font>
+  <div><font size="2pt" face="Arial"><font size="-1">Review article pertaining to the optimization principles and methods: <br />
+  <a href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/papersPDF/shino2010Book.pdf" target="_blank">Shinomoto S (2010) Estimating the firing rate. in &quot;Analysis of Parallel
+    Spike Train Data&quot; (eds. S. Gruen and S. Rotter) (Springer, New York)</a>.<br />
+    <br />
+    <br />
+    </font></font></font></font>
+    <table bgcolor="#ffffcc">
+      <tbody>
+        <tr>
+          <td width="800" height="47" bgcolor="#ccffcc"><font size="2pt" face="Arial"><font size="-1"> Individual programs were contributed by Hideaki Shimazaki, Takahiro Omi, Takeaki Shimokawa, Yasuhiro Mochizuki, Junpei Naito, and Kazuki Nakamura. For assistance, contact <a href="mailto:shinomoto@scphys.kyoto-u.ac.jp?Subject=Histograms">Shigeru Shinomoto</a>, who directed this project.<br />
+          </font></font></td>
+        </tr>
+      </tbody>
+    </table>
+    <br />
+    <font size="2pt" face="Arial">Current version: 1.1 : 2017/06/22<br />
+    </font>
+    <table>
+      <tbody>
+        <tr>
+          <td align="center"><font size="2pt" face="Arial"><font color="#000000" size="2">The number of visitors since 2017/05/16: <span lang="EN-US" style="font-size:11.0pt;font-family:
+Arial"><img border="0" width="40" height="10" id="_x0000_i1030" src="http://www.ton.scphys.kyoto-u.ac.jp/~shino/counter/count.cgi?histograms" /></span></font></font></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+</form>
+    <font size="2pt"><font size="-1">Other analytical tools: <a href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/toolbox/english.htm" target="_blank">SULAB: Single Unit LABoratory<br /><br /></a>
+
+  <font face="Arial">------------------ <a href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/english.html" target="_blank">Shigeru Shinomoto</a> --------------------------------------------------------------------------
+</font></div>
+<br />
+</body>
+</html>
