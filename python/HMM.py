@@ -19,18 +19,22 @@
 
 
 ##########
-# HMM.pyを実行するには、matplotlib、numpy、pandasライブラリが必要です
+# HMM.py  returns the firing rate selected as an alternative hidden state.
+#  needs libraries: (matplotlib, numpy, pandas). 
 
-# 使い方
-# HMM.pyを、パスが通っているフォルダに置き、
+# Instruction
+# put HMM.py in a folder on a path.
 # import HMM
-# をすると、ファイル内の関数が、HMM.(関数名)の形で実行可能になります。
-
-# ユーザーが使用するのはHMM関数のみで十分です。
-# HMM関数は、spike列を引数に取ります。
-# spike列の形式は、list、numpy.arrayなどが利用可能です。
-# 隠れマルコフモデルを使ってパラメータを推測し、グラフを描画します。
-# 値を返しません。
+# then you may obtain HMM.().
+# you need only HMM function.
+# the function HMM take a spike train as an argument.
+# spike train could be given by list or numpy.array.
+# parameters are determined by the HMM and  a figure is drawn.
+# references:
+# Mochizuki and Shinomoto, Analog and digital codes in the brain
+# https://arxiv.org/abs/1311.4035
+# Contact:
+# Shigeru Shinomoto: shinomoto@scphys.kyoto-u.ac.jp
 ##########
 
 import matplotlib.pyplot as plt
@@ -73,16 +77,11 @@ def HMM(spike_times):
     return rate_hmm
 
 ####
-# 隠れマルコフモデルで推定した値の描画を行います。
-
-# 引数
-# spike_times: スパイク列
-# rate_hmm: 隠れマルコフモデルで推定した値
-
-# 返り値
-# なし
+# draws the rate of event occurrence.
+# arguments:
+# spike_times: spike train
+# rate_hmm: estimated rate
 ####
-
 
 def drawHMM(spike_times, rate_hmm):
     """
@@ -266,20 +265,19 @@ def get_vec_Xi(vec_spkt, bin_width):
             vec_Xi[bin_id] += 1
     return vec_Xi
 
-
 ####
-# HMM_E_step関数
-# 隠れマルコフモデルの期待値を計算するステップです。
+# HMM_E_step
+# carries out the E step.
 
-# 引数
-# vec_Xi: ベクトルX_i、numpy arrayクラスで表現します。
-# mat_A: 行列A、numpy arrayクラスで表現します。
-# vec_lambda: ベクトルラムダ、numpy arrayクラスで表現します。
-# vec_pi: ベクトルパイ、numpy arrayクラスで表現します。
+# arguments:
+# vec_Xi: numpy array class
+# mat_A: numpy array class
+# vec_lambda: numpy array class
+# vec_pi: numpy array class
 
-# 返り値
-# mat_Gamma:
-# mat_Xi:
+# returns
+# mat_Gamma: numpy array class
+# mat_Xi: numpy array class
 ####
 
 def HMM_E_step(vec_Xi, mat_A, vec_lambda, vec_pi):
@@ -475,10 +473,23 @@ def get_Gamma_Xi(mat_A, mat_emission, mat_alpha, mat_beta, vec_C):
     return mat_Gamma_buf, xi
 
 ####
-# HMM_M_step関数
-# 隠れマルコフモデルの、尤度最大化ステップです。
-####
+# HMM_M_step
+# carries out the M step.
+# updates (vector pi, vector lambda, matrix A).
 
+# arguments:
+# vec_Xi: numpy array class
+# mat_A: numpy array class
+# vec_lambda: numpy array class
+# vec_pi: numpy array class
+# mat_Gamma: numpy array class
+# mat_Xi: numpy array class
+
+# returns
+# vec_pi_new: numpy array class
+# vec_lambda_new: numpy array class
+# mat_A_new: numpy array class
+####
 
 def HMM_M_step(vec_Xi, mat_A, vec_lambda, vec_pi, mat_Gamma, mat_Xi):
     """
@@ -555,6 +566,19 @@ def HMM_M_step(vec_Xi, mat_A, vec_lambda, vec_pi, mat_Gamma, mat_Xi):
     return res
     そのまま書いた方が代入ぶんの時間を省ける'''
     return vec_pi_new, vec_lambda_new, mat_A_new
+
+####
+# HMM_Viterbi
+# carries out the Viterbi algorithm.
+# arguments:
+# vec_Xi: numpy array class
+# mat_A: numpy array class
+# vec_lambda: numpy array class
+# vec_pi: numpy array class
+
+# returns
+# vec_hs_seq: index of the optimal vec_lambda
+####
 
 def HMM_Viterbi(vec_Xi, mat_A, vec_lambda, vec_pi):
     """
