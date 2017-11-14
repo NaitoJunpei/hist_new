@@ -18,10 +18,7 @@
 # Shigeru Shinomoto: shinomoto@scphys.kyoto-u.ac.jp
 ########## 
 
-
-
 import matplotlib.pyplot as plt
-import math
 import numpy as np
 
 def SS(spike_times) :
@@ -38,7 +35,6 @@ def SS(spike_times) :
             cost_min        = cost
             optimal_bin_num = bin_num
 
-    print(optimal_bin_num)
     drawSS(spike_times, optimal_bin_num)
     return optimal_bin_num
 
