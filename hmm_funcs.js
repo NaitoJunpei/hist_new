@@ -461,7 +461,7 @@ function get_hmm_ratefunc(spike_time, bin_width)
     var vec_lambda_old=vec_lambda.concat();
     var loop=0;
 	var flag=0;
-	while(loop<=EMloop_num || flag==0)
+	while(loop<=EMloop_num && flag==0)
     {
 		var M_res=HMM_M_step(vec_Xi, mat_A, vec_lambda, vec_pi, mat_Gamma, mat_Xi);
 		vec_pi_new=M_res[0];
