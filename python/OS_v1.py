@@ -1,3 +1,6 @@
+# OS_v1.py
+# Junpei Naito 2017/11/14
+
 ##########
 # OS_v1.py computes the optimal number of bins of time-histogram based on the optimization method proposed by Omi and Shinomoto, which may be applicable to non-Poisson spike trains. 
 # needs libraries: (matplotlib, numpy, pandas). 

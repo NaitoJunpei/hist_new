@@ -1,4 +1,7 @@
-##########
+# SS_v1.py
+# Junpei Naito 2017/11/14
+
+##########p
 # SS_v1.py computes the optimal number of bins of time-histogram based on the optimization method proposed by Shimazaki and Shinomoto 2007. 
 # needs libraries: (matplotlib, numpy).
 
@@ -31,7 +34,6 @@ def SS(spike_times) :
     for bin_num in range(1, 500) :
         cost = cost_av(spike_times, onset, offset, bin_num, 10)
         if (bin_num == 1 or cost < cost_min):
-            # print(bin_num)
             cost_min        = cost
             optimal_bin_num = bin_num
 
@@ -78,6 +80,7 @@ def cost_av(spike_times, onset, offset, bin_num, times) :
     temp = 0.0
     bin_width = (offset - onset) / bin_num
     TT = np.hstack([spike_times, spike_times + (offset - onset)])
+
     for i in range(0, times) :
         start = onset + i * bin_width / times
         end = offset + i * bin_width / times

@@ -1,3 +1,6 @@
+# KDERB_rate_v2.py
+# Junpei Naito 2017/11/14
+
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.fft as fft
