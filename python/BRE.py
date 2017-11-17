@@ -1,3 +1,6 @@
+# BRE.py
+# Junpei Naito 2017/9/19
+
 ##########
 # BRE.py returns Bayesian estimation of the rate of event occurrence.
 # needs libraries: (matplotlib, numpy).

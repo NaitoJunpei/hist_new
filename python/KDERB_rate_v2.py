@@ -1,3 +1,6 @@
+# KDERB_rate_v2.py
+# Junpei Naito 2017/11/14
+
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.fft as fft
@@ -63,7 +66,6 @@ def KDERB(spike_times) :
     
     tin = np.linspace(min_value, max_value, min(math.ceil(T / dt_samp), 1e3))
     spike_ab = spike_times[np.nonzero((spike_times >= min(tin)) * (spike_times <= max(tin)))]
-    print(spike_ab)
 
     # dt = min(tin)
     dt = min(np.diff(tin))
@@ -72,7 +74,6 @@ def KDERB(spike_times) :
     # y_hist = np.histogram(spike_ab, tin - dt / 2)[0]
     L = len(y_hist)
     N = sum(y_hist)
-    print(N)
     y_hist = y_hist / (N * dt)
 
     Wmin = 2 * dt
@@ -89,8 +90,6 @@ def KDERB(spike_times) :
 
     f1 = CostFunction(y_hist, N, logexp(c1), dt)[0]
     f2 = CostFunction(y_hist, N, logexp(c2), dt)[0]
-
-    print(f1, f2)
 
     k = 0
     W = [0] * 20
@@ -125,7 +124,6 @@ def KDERB(spike_times) :
             y = yh2 / sum(yh2 * dt)
 
         k += 1
-        ####print(f1, f2)
 
     nbs = int(1e3)
     yb = np.zeros([nbs, len(tin)])
@@ -146,7 +144,6 @@ def KDERB(spike_times) :
     y = y * len(spike_times)
 
     drawKDERB(y, tin, y95b, y95u)
-
     return y, tin, optw, W, C, y95b, y95u, yb
         
 def sort(mat) :
