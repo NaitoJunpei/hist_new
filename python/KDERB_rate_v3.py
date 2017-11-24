@@ -20,12 +20,8 @@ import math
 #     resolution of the data, spike_times, the estimation was  done at
 #     smaller number of points than t. The results, t and y, are obtained
 #     by interpolating the low resolution sampling points.)
-# tw: Optimal kernel bandwidth.
-#     Kernel bandwidths examined.
-#     Cost function of W.
-# y95b, y95u:
-#     Bootstrap confidence intervals.
-# yb: Bootstrap samples.
+# optw:
+#     Optimal kernel bandwidth.
 
 # Optimization principle:
 # The optimal bandwidth is obtained as a minimizer of the formula,
@@ -67,11 +63,9 @@ def KDERB(spike_times) :
     tin = np.linspace(min_value, max_value, min(math.ceil(T / dt_samp), 1e3))
     spike_ab = spike_times[np.nonzero((spike_times >= min(tin)) * (spike_times <= max(tin)))]
 
-    # dt = min(tin)
     dt = min(np.diff(tin))
 
     y_hist = np.histogram(spike_ab, np.append(tin, max_value) - dt / 2)[0]
-    # y_hist = np.histogram(spike_ab, tin - dt / 2)[0]
     L = len(y_hist)
     N = sum(y_hist)
     y_hist = y_hist / (N * dt)
@@ -129,26 +123,10 @@ def KDERB(spike_times) :
 
         k += 1
 
-    nbs = int(1e3)
-    yb = np.zeros([nbs, len(tin)])
-
-    for i in range(0, nbs) :
-        idx = [math.ceil(np.random.random() * N) for j in range(0, N)]
-        xb = spike_ab[idx]
-        y_histb = np.histogram(xb, np.append(tin, max_value) - dt / 2)[0] / (dt * N)
-
-        yb_buf = fftkernel(y_histb, optw / dt)
-        yb_buf = yb_buf / sum(yb_buf * dt)
-
-        yb[i] = yb_buf          # linear extrapolation in the MATLAB version is omitted here, because we adopt only the case of taking one argument.
-    ybsort = sort(yb)
-    y95b = ybsort[math.floor(0.05 * nbs), :]
-    y95u = ybsort[math.floor(0.95 * nbs), :]
-
     y = y * len(spike_times)
 
-    drawKDERB(y, tin, y95b, y95u)
-    return y, tin, optw, W, C, y95b, y95u, yb
+    drawKDERB(y, tin)
+    return y, tin, optw
         
 def sort(mat) :
     N = len(mat[0])
@@ -157,17 +135,11 @@ def sort(mat) :
 
     return mat
 
-# def logexp(x) :
-#     return math.log(1 + math.exp(x))
-
 def logexp(x) :
     if x < 1e2 :
         return math.log(1 + math.exp(x))
     if x >= 1e2 :
         return x
-
-# def ilogexp(x) :
-#     return math.log(math.exp(x) - 1)
 
 def ilogexp(x) :
     if x < 1e2 :
@@ -235,7 +207,7 @@ def nextpow2(n) :
 
         return m
     
-def drawKDERB(y, t, y95b, y95u) :
+def drawKDERB(y, t) :
     plt.stackplot(t, y)
     plt.ylim(ymin = 0)
     plt.show()

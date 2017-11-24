@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.fft as fft
 import math
+import time
 
 # y, t, optw, W, C, y95b, y95u, yb = KDE(spike_times)
 
@@ -20,12 +21,8 @@ import math
 #     resolution of the data, spike_times, the estimation was  done at
 #     smaller number of points than t. The results, t and y, are obtained
 #     by interpolating the low resolution sampling points.)
-# tw: Optimal kernel bandwidth.
-#     Kernel bandwidths examined.
-#     Cost function of W.
-# y95b, y95u:
-#     Bootstrap confidence intervals.
-# yb: Bootstrap samples.
+# optw:
+#     Optimal kernel bandwidth.
 
 # Optimization principle:
 # The optimal bandwidth is obtained as a minimizer of the formula,
@@ -55,6 +52,7 @@ import math
 # y is a time hisogram representing the density of spikes.
 
 def KDE(spike_times) :
+    start = time.time()
     spike_times = np.array(sorted(spike_times))
     max_value = max(spike_times)
     min_value = min(spike_times)
@@ -126,28 +124,11 @@ def KDE(spike_times) :
 
         k += 1
 
-    nbs = int(1e3)
-    yb = np.zeros([nbs, len(tin)])
-
-    for i in range(0, nbs) :
-        idx = [math.ceil(np.random.random() * N) for i in range(0, N)]
-        xb = spike_ab[idx]
-        y_histb = np.histogram(xb, np.append(tin, max_value) - dt / 2)[0] / (dt * N)
-
-        yb_buf = fftkernel(y_histb, optw / dt)
-        yb_buf = yb_buf / sum(yb_buf * dt)
-
-        yb[i] = yb_buf          # linear extrapolation in the MATLAB version is omitted here, because we adopt only the case of taking one argument.
-
-    ybsort = sort(yb)
-    y95b = ybsort[math.floor(0.05 * nbs), :]
-    y95u = ybsort[math.floor(0.95 * nbs), :]
-
     y = y * len(spike_times)
 
     drawKDE(y, tin)
 
-    return y95b, y95u
+    return y, tin, optw
         
 def sort(mat) :
     N = len(mat[0])

@@ -61,13 +61,14 @@ def EMmethod(ISI, beta0) :
         beta_new = 0
         t0 = 0
 
-        for i in range(0, N - 1) :
-            if(ISI[i] > 0) :
-                beta_new += (kalman[1][i + 1] + kalman[1][i] - 2 * kalman[2][i]
-                             + (kalman[0][i + 1] - kalman[0][i])
-                             * (kalman[0][i + 1] - kalman[0][i])) / ISI[i]
-            else :
-                t0 += 1
+        #------------- 変更 ここから 17/11/24
+        indexes = np.where(ISI[:-1] > 0)[0]
+        beta_new = sum((kalman[1][indexes + 1] + kalman[1][indexes] - 2 * kalman[2][indexes]
+                    + (kalman[0][indexes + 1] - kalman[0][indexes])
+                    * (kalman[0][indexes + 1] - kalman[0][indexes])) / ISI[indexes])
+        t0 = N - 1 - len(indexes)
+        # revised by Naito 17/11/24
+        #------------- 変更 ここまで
 
         beta_new = (N - t0 - 1) / (2 * beta_new)
 
@@ -116,7 +117,9 @@ def KalmanFilter(ISI, beta) :
 
         EL_N[i] = EL[0][i] + H * (EL_N[i + 1] - EL[1][i])
         VL_N[i] = VL[0][i] + H * H * (VL_N[i + 1] - VL[1][i])
-        COVL_N[i] = H * VL_N[i + 1]
+        # COVL_N[i] = H * VL_N[i + 1]
+
+    COVL_N = (VL[0][:-1] / VL[1][:-1]) * VL_N[1:]
 
     return [EL_N, VL_N, COVL_N]
 
