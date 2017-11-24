@@ -1,14 +1,14 @@
-# OS_v1.py
+# OS_v2.py
 # Junpei Naito 2017/11/14
 
 ##########
-# OS_v1.py computes the optimal number of bins of time-histogram based on the optimization method proposed by Omi and Shinomoto, which may be applicable to non-Poisson spike trains. 
+# OS_v2.py computes the optimal number of bins of time-histogram based on the optimization method proposed by Omi and Shinomoto, which may be applicable to non-Poisson spike trains. 
 # needs libraries: (matplotlib, numpy, pandas). 
 
 # Instruction
-# put OS_v1.py in a folder. 
-# import OS_v1
-# then you may obtain OS_v1.().
+# put OS_v2.py in a folder. 
+# import OS_v2
+# then you may obtain OS_v2.().
 
 # you need only OS function.
 # the function OS takes a spike train as an argument. 
@@ -33,6 +33,9 @@ def OS(spike_times) :
     lv          = 0
     ISI         = np.diff(spike_times)
 
+    #------------- 追加 ここから 17/11/24
+    # Lvの計算を行う. Lvは、スパイクの不規則さを表す
+    #------------- 追加 ここまで
     for i in range(0, len(spike_times) - 2) :
         interval1 = ISI[i]
         interval2 = ISI[i + 1]
@@ -42,10 +45,18 @@ def OS(spike_times) :
         else :
             lv += 3 / (len(spike_times) - 2)
 
+    #------------- 追加 ここから 17/11/24
+    # histogramのbinの数を1から500まで変化させつつ、cost関数を計算する
+    # cost関数の値がもっとも小さくなるbinの数を採用する
+    #------------- 追加 ここまで
+    
     for bin_num in range(1, 500) :
         times = 10
         cost = cost_av(spike_times, onset, offset, lv, bin_num, times)
         
+        #------------- 追加 ここから 17/11/24
+        # cost_minに値が入っていない時と、計算したcostがcost_minより小さかった場合に値を更新する
+        #------------- 追加 ここまで
         if (bin_num == 1 or cost < cost_min) :
             cost_min        = cost
             optimal_bin_num = bin_num
@@ -100,6 +111,11 @@ def cost_av(spike_times, onset, offset, lv, bin_num, times) :
     temp = 0.0
     bin_width = (offset - onset) / bin_num
     TT = np.hstack([spike_times, spike_times + (offset - onset)])
+
+    #------------- 追加 ここから 17/11/24
+    # spikeのスタート位置によって値に差がでるため、スタート位置を変えながらコストを計算し、平均をとる
+    # times回スタート位置を変える
+    #------------- 追加 ここまで
     for i in range(0, times) :
         start = onset + i * bin_width / times
         end = offset + i * bin_width / times

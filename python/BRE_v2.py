@@ -1,14 +1,14 @@
-# BRE.py
+# BRE_v2.py
 # Junpei Naito 2017/9/19
 
 ##########
-# BRE.py returns Bayesian estimation of the rate of event occurrence.
+# BRE_v2.py returns Bayesian estimation of the rate of event occurrence.
 # needs libraries: (matplotlib, numpy).
 
 # Instruction
-# put BRE.py on a folder in a path.
+# put BRE_v2.py on a folder in a path.
 # import BRE
-# then you may obtain BRE.().
+# then you may obtain BRE_v2.().
 # you need only BRE function
 # the function BRE(Bayesian Rate Estimate) takes a spike train as an argument.
 # spike train could be given by list or numpy.array.

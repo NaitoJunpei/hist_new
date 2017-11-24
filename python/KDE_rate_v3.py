@@ -1,14 +1,14 @@
-# KDERB_rate_v2.py
-# Junpei Naito 2017/11/14
+# KDE_rate_v2.py
+# Junpei Naito 2017/9/27
 
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.fft as fft
 import math
 
-# y, t, optw, W, C, y95b, y95u, yb = KDERB(spike_times)
+# y, t, optw, W, C, y95b, y95u, yb = KDE(spike_times)
 
-# Function KDERB returns an optimized kernel density estimate using a Gauss kernel function.
+# Function KDE returns an optimized kernel density estimate using a Gauss kernel function.
 
 # Input arguments:
 # spike_times: sample data list or array.
@@ -45,7 +45,7 @@ import math
 # For more information, please visit
 # http://2000.jukuin.keio.ac.jp/shimazaki/res/kernel.html
 
-# See also SSVKERNEL, SSHIST, sskernel
+# See also SSVKERNEL, SSHIST
 
 # Hideaki Shimazaki
 # http://2000.jukuin.keio.ac.jp/Shimazaki
@@ -54,8 +54,7 @@ import math
 # y-axis was multiplied by the number of data, so that
 # y is a time hisogram representing the density of spikes.
 
-
-def KDERB(spike_times) :
+def KDE(spike_times) :
     spike_times = np.array(sorted(spike_times))
     max_value = max(spike_times)
     min_value = min(spike_times)
@@ -67,11 +66,9 @@ def KDERB(spike_times) :
     tin = np.linspace(min_value, max_value, min(math.ceil(T / dt_samp), 1e3))
     spike_ab = spike_times[np.nonzero((spike_times >= min(tin)) * (spike_times <= max(tin)))]
 
-    # dt = min(tin)
     dt = min(np.diff(tin))
 
     y_hist = np.histogram(spike_ab, np.append(tin, max_value) - dt / 2)[0]
-    # y_hist = np.histogram(spike_ab, tin - dt / 2)[0]
     L = len(y_hist)
     N = sum(y_hist)
     y_hist = y_hist / (N * dt)
@@ -94,6 +91,10 @@ def KDERB(spike_times) :
     k = 0
     W = [0] * 20
     C = [0] * 20
+
+    #------------- 追加 ここから 17/11/24
+    # c1とc2の和がa, b間の差より小さくなるか、20回目の計算が終わるまで繰り返す
+    #------------- 追加 ここまで
 
     while(abs(b - a) > tol * (abs(c1) + abs(c2)) and k < 20) :
         if(f1 < f2) :
@@ -129,7 +130,7 @@ def KDERB(spike_times) :
     yb = np.zeros([nbs, len(tin)])
 
     for i in range(0, nbs) :
-        idx = [math.ceil(np.random.random() * N) for j in range(0, N)]
+        idx = [math.ceil(np.random.random() * N) for i in range(0, N)]
         xb = spike_ab[idx]
         y_histb = np.histogram(xb, np.append(tin, max_value) - dt / 2)[0] / (dt * N)
 
@@ -137,14 +138,16 @@ def KDERB(spike_times) :
         yb_buf = yb_buf / sum(yb_buf * dt)
 
         yb[i] = yb_buf          # linear extrapolation in the MATLAB version is omitted here, because we adopt only the case of taking one argument.
+
     ybsort = sort(yb)
     y95b = ybsort[math.floor(0.05 * nbs), :]
     y95u = ybsort[math.floor(0.95 * nbs), :]
 
     y = y * len(spike_times)
 
-    drawKDERB(y, tin, y95b, y95u)
-    return y, tin, optw, W, C, y95b, y95u, yb
+    drawKDE(y, tin)
+
+    return y95b, y95u
         
 def sort(mat) :
     N = len(mat[0])
@@ -153,17 +156,11 @@ def sort(mat) :
 
     return mat
 
-# def logexp(x) :
-#     return math.log(1 + math.exp(x))
-
 def logexp(x) :
     if x < 1e2 :
         return math.log(1 + math.exp(x))
     if x >= 1e2 :
         return x
-
-# def ilogexp(x) :
-#     return math.log(math.exp(x) - 1)
 
 def ilogexp(x) :
     if x < 1e2 :
@@ -171,15 +168,8 @@ def ilogexp(x) :
     if x >= 1e2 :
         return x
 
-    
-
 def CostFunction(y_hist, N, w, dt) :
-    yh = fftkernel(list(y_hist), w / dt) # density
-    halflen = math.ceil(len(y_hist) / 2)
-    remlen = len(y_hist) - halflen
-    addleft = fftkernel(list(np.r_[np.zeros(remlen), y_hist[0:halflen]]), w / dt)
-    addright = fftkernel(list(np.r_[y_hist[halflen : len(y_hist)], np.zeros(remlen)]), w / dt)
-    yh = yh + np.r_[np.fliplr([addleft[0:halflen]])[0], np.zeros(remlen)] + np.r_[np.zeros(remlen), np.fliplr([addright[halflen:len(addright)]])[0]]
+    yh = fftkernel(y_hist, w / dt) # density
 
     # formula for density
     C = sum(yh * yh) * dt - 2 * sum(yh * y_hist) * dt + 2 * 1 / (math.sqrt(2 * math.pi) * w * N)
@@ -207,13 +197,13 @@ def fftkernel(x, w) :
     # y is a time histogram representing the density of spikes.
 
     L = len(x)
-    Lmax = max(1.0, math.floor(L + 3.0 * w))
+    Lmax = max(1,0, math.floor(L + 3.0 * w))
     n = int(2 ** (nextpow2(Lmax)))
 
     X = fft.fft(x, n)
 
     f = (np.array(range(0, n)) + 0.0) / n
-    f = np.r_[-f[range(0, int(n / 2) + 1)], f[range(int(n / 2) - 1, 0, -1)]]
+    f = np.r_[-f[range(0, int(n / 2) + 1)], f[range(int(n / 2), 1, -1)]]
 
     K = [math.exp(-0.5 * ((w * 2 * math.pi * f_i) ** 2)) for f_i in f]
 
@@ -231,7 +221,7 @@ def nextpow2(n) :
 
         return m
     
-def drawKDERB(y, t, y95b, y95u) :
+def drawKDE(y, t) :
     plt.stackplot(t, y)
     plt.ylim(ymin = 0)
     plt.show()
