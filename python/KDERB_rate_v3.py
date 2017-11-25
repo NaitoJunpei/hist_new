@@ -44,7 +44,7 @@
 
 #
 # KDERB_rate_v2.py and KDERB_rate_v3.py
-# revised by Junpei Naito 2017/11/14
+# Junpei Naito 2017/11/14
 
 import matplotlib.pyplot as plt
 import numpy as np

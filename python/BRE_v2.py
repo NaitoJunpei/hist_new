@@ -18,7 +18,7 @@
 # Shigeru Shinomoto: shinomoto@scphys.kyoto-u.ac.jp
 ##########
 # BRE_v2.py
-# revised by Junpei Naito 2017/9/19
+# Junpei Naito 2017/9/19
 ##########
 
 import matplotlib.pyplot as plt

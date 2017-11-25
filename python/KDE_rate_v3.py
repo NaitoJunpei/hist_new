@@ -43,7 +43,7 @@
 # y is a time hisogram representing the density of spikes.
 
 # KDE_rate_v2.py and KDE_rate_v3.py
-# revised by Junpei Naito 2017/9/27
+# Junpei Naito 2017/9/27
 
 import matplotlib.pyplot as plt
 import numpy as np

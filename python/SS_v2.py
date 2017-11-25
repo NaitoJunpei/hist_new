@@ -1,6 +1,3 @@
-# SS_v2.py
-# Junpei Naito 2017/11/14
-
 ##########
 # SS_v2.py computes the optimal number of bins of time-histogram based on the optimization method proposed by Shimazaki and Shinomoto 2007. 
 # needs libraries: (matplotlib, numpy).
@@ -20,6 +17,9 @@
 # Contact:
 # Shigeru Shinomoto: shinomoto@scphys.kyoto-u.ac.jp
 ########## 
+# SS_v2.py
+# Junpei Naito 2017/11/14
+########## 
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,10 +31,8 @@ def SS(spike_times) :
     onset       = min_value - 0.001 * (max_value - min_value)
     offset      = max_value + 0.001 * (max_value - min_value)
 
-    #------------- 追加 ここから 17/11/24
-    # histogramのbinの数を1から500まで変化させつつ、cost関数を計算する
-    # cost関数の値がもっとも小さくなるbinの数を採用する
-    #------------- 追加 ここまで
+    # computes the cost function by changing the number of bins
+    # adopts the number of bins that minimizes the cost function
     
     for bin_num in range(1, 500) :
         cost = cost_av(spike_times, onset, offset, bin_num, 10)
@@ -86,10 +84,8 @@ def cost_av(spike_times, onset, offset, bin_num, times) :
     bin_width = (offset - onset) / bin_num
     TT = np.hstack([spike_times, spike_times + (offset - onset)])
 
-    #------------- 追加 ここから 17/11/24
-    # spikeのスタート位置によって値に差がでるため、スタート位置を変えながらコストを計算し、平均をとる
-    # times回スタート位置を変える
-    #------------- 追加 ここまで
+    # averages the cost with respect to the starting positions.
+    # times: number of starting positions.
 
     for i in range(0, times) :
         start = onset + i * bin_width / times
