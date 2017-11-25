@@ -1,11 +1,3 @@
-# KDERB_rate_v2.py
-# Junpei Naito 2017/11/14
-
-import matplotlib.pyplot as plt
-import numpy as np
-import numpy.fft as fft
-import math
-
 # y, t, optw, W, C, y95b, y95u, yb = KDERB(spike_times)
 
 # Function KDERB returns an optimized kernel density estimate using a Gauss kernel function.
@@ -50,6 +42,15 @@ import math
 # y-axis was multiplied by the number of data, so that
 # y is a time hisogram representing the density of spikes.
 
+#
+# KDERB_rate_v2.py and KDERB_rate_v3.py
+# revised by Junpei Naito 2017/11/14
+
+import matplotlib.pyplot as plt
+import numpy as np
+import numpy.fft as fft
+import math
+
 
 def KDERB(spike_times) :
     spike_times = np.array(sorted(spike_times))
@@ -89,9 +90,9 @@ def KDERB(spike_times) :
     W = [0] * 20
     C = [0] * 20
 
-    #------------- 追加 ここから 17/11/24
-    # c1とc2の和がa, b間の差より小さくなるか、20回目の計算が終わるまで繰り返す
-    #------------- 追加 ここまで
+    #------------- revision in version 2 (2017/11/24) 
+    # repeat 20 times if c1+c2 < (difference between a and b)
+    #------------- 
 
     while(abs(b - a) > tol * (abs(c1) + abs(c2)) and k < 20) :
         if(f1 < f2) :

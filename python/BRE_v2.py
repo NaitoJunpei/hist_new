@@ -1,6 +1,3 @@
-# BRE_v2.py
-# Junpei Naito 2017/9/19
-
 ##########
 # BRE_v2.py returns Bayesian estimation of the rate of event occurrence.
 # needs libraries: (matplotlib, numpy).
@@ -19,6 +16,9 @@
 # Shigeru Shinomoto (2010) Estimating the firing rate. in "Analysis of Parallel Spike Train Data" (eds. S. Gruen and S. Rotter) (Springer, New York).
 # Contact:
 # Shigeru Shinomoto: shinomoto@scphys.kyoto-u.ac.jp
+##########
+# BRE_v2.py
+# revised by Junpei Naito 2017/9/19
 ##########
 
 import matplotlib.pyplot as plt
@@ -61,14 +61,14 @@ def EMmethod(ISI, beta0) :
         beta_new = 0
         t0 = 0
 
-        #------------- 変更 ここから 17/11/24
+        #------------- revision in version 2 (2017/11/24) begin
         indexes = np.where(ISI[:-1] > 0)[0]
         beta_new = sum((kalman[1][indexes + 1] + kalman[1][indexes] - 2 * kalman[2][indexes]
                     + (kalman[0][indexes + 1] - kalman[0][indexes])
                     * (kalman[0][indexes + 1] - kalman[0][indexes])) / ISI[indexes])
         t0 = N - 1 - len(indexes)
-        # revised by Naito 17/11/24
-        #------------- 変更 ここまで
+        # revised by Naito 2017/11/24
+        #------------- revision in version 2 (2017/11/24) end
 
         beta_new = (N - t0 - 1) / (2 * beta_new)
 

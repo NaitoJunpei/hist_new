@@ -1,12 +1,3 @@
-# KDE_rate_v2.py
-# Junpei Naito 2017/9/27
-
-import matplotlib.pyplot as plt
-import numpy as np
-import numpy.fft as fft
-import math
-import time
-
 # y, t, optw, W, C, y95b, y95u, yb = KDE(spike_times)
 
 # Function KDE returns an optimized kernel density estimate using a Gauss kernel function.
@@ -51,6 +42,15 @@ import time
 # y-axis was multiplied by the number of data, so that
 # y is a time hisogram representing the density of spikes.
 
+# KDE_rate_v2.py and KDE_rate_v3.py
+# revised by Junpei Naito 2017/9/27
+
+import matplotlib.pyplot as plt
+import numpy as np
+import numpy.fft as fft
+import math
+import time
+
 def KDE(spike_times) :
     start = time.time()
     spike_times = np.array(sorted(spike_times))
@@ -90,9 +90,9 @@ def KDE(spike_times) :
     W = [0] * 20
     C = [0] * 20
 
-    #------------- 追加 ここから 17/11/24
-    # c1とc2の和がa, b間の差より小さくなるか、20回目の計算が終わるまで繰り返す
-    #------------- 追加 ここまで
+    #------------- revision in version 2 (2017/11/24) 
+    # repeat 20 times if c1+c2 < (difference between a and b)
+    #------------- 
 
     while(abs(b - a) > tol * (abs(c1) + abs(c2)) and k < 20) :
         if(f1 < f2) :

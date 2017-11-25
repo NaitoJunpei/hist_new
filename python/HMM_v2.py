@@ -1,23 +1,3 @@
-###########################################
-#
-# 元のpythonの改訂版
-#
-# forループを行列計算できる所は変更してます
-# 元のコードはコメントアウトしてあります
-# 計算手順は買かえてないです。
-# 改訂する時の都合でEMloop_num = 1000 に変更してあります。プログラムにミスがあると最後まで回って時間がかかるためです。
-# 細かいことですが、=の位置を揃えるのはpythonのコーディングの規約に反してます
-# 元のコメントは残してますが、追加で新しいコメントを入れてあります
-#
-# 11/9改訂
-# 改訂者：遠藤大輔
-###########################################
-
-######################
-# 以下から元のコードに少し手を加えたもの
-######################
-
-
 ##########
 # HMM.py  returns the firing rate selected as an alternative hidden state.
 #  needs libraries: (matplotlib, numpy, pandas). 
@@ -32,68 +12,98 @@
 # parameters are determined by the HMM and  a figure is drawn.
 # references:
 # Mochizuki and Shinomoto, Analog and digital codes in the brain
+# Physical Review E (2014) 89:022705
 # https://arxiv.org/abs/1311.4035
 # Contact:
 # Shigeru Shinomoto: shinomoto@scphys.kyoto-u.ac.jp
 ##########
+###########################################
+# HMM_v2.py
+# 2017/11/13 revised by Daisuke Endo
+# endo.daisuke.63m@st.kyoto-u.ac.jp
+###########################################
+
+#############
+# Instruction
+#
+# put HMM_v1.py in a folder on a path.
+# import HMM_v1 as HMM
+#  then executable as HMM.(function name)
+#
+# the function HMM takes a spike train as an argument
+# spike train could be given by list or numpy.array
+# read a text file of a spike train by data = np.loadtxt("data.txt")
+# this program computes hidden variables given as instantaneous rate, using the HMM and draw a figure of the rate.
+#
+# you need libraries of matplotlib, numpy, and pandas
+# references:
+# Mochizuki and Shinomoto, Analog and digital codes in the brain
+# https://arxiv.org/abs/1311.4035
+# Contact:
+# Shigeru Shinomoto: shinomoto@scphys.kyoto-u.ac.jp
+############
 
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
 import math
-import time
 
-def HMM(spike_times):
+
+def hmm(spike_times):
     """
-    spike_times=spike時刻をlist,ndarrayなどに入れたもの
-    結果：
-    隠れstateの遷移結果の値とそのグラフを出力
-    計算にかかった時刻も出力
+    argument: spike_times: given in list or ndarray
+    returns hidden states (rates) and draw the figure
+    observed values is not binary (0,1) but the number of spikes in a given time bin.
+    Poisson distribution is assumed for the number of spikes for a given time bin.
+ 
+python HMM_v1.py:
+    if __name__ == "__main__":
+        data = np.loadtxt("data.txt")
+        hmm(spike_times=data)
+
+    # HMM.py: 
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import math
+    import HMM_v1 as HMM
+    data = np.loadtxt("data.txt")
+    HMM.hmm(spike_times=data)
     """
     ################################
-    # スタート時刻、終了時刻を決める
-    # bin幅は1つのbinに平均して5個のspikeが入るように決めている
+    # determine the times of initiation and termination
+    # bin size =  5*(inter-spike interval)
     ##############################
-    t1 = time.time()
+
     spike_times = np.array(list(spike_times))
-    max_value   = max(spike_times)
-    min_value   = min(spike_times)
-    onset       = min_value - 0.001 * (max_value - min_value)
-    offset      = max_value + 0.001 * (max_value - min_value)
-    bin_width   = (offset - onset) / len(spike_times) * 5
+    max_value = max(spike_times)
+    min_value = min(spike_times)
+    onset = min_value - 0.001 * (max_value - min_value)
+    offset = max_value + 0.001 * (max_value - min_value)
+    bin_width = (offset - onset) / len(spike_times) * 5
 
     ###############################
-    #
-    # get_hmm_ratefuncでHMMの遷移の様子を求めます。
-    # rate_hmm = (time, rate)の形のndarray
-    # drawHMMで実際に描画します。
-    #
+    # get_hmm_ratefunc: compute the transition between the hidden states
+    # rate_hmm = (time, rate) given in a form of ndarray
+    # drawHMM: draw a figure
     ##############################
 
     rate_hmm = get_hmm_ratefunc(spike_times, bin_width, max_value, min_value)
-    t2 = time.time()
-    print("baumwelch+viterbi time",t2-t1)
+
     drawHMM(spike_times, rate_hmm)
+
     return rate_hmm
 
-####
-# draws the rate of event occurrence.
-# arguments:
-# spike_times: spike train
-# rate_hmm: estimated rate
-####
 
 def drawHMM(spike_times, rate_hmm):
     """
-    HMMで推定した値の描画を行う
-    rate_hmm = バウムウェルチとビタビで推定された値。(time, rate)の形のndarray
-    結果：
-    グラフを出力
+    draw a figure of the estimated state (given in a form of firing rate)
+    arguments:
+        spike_times : given in list or ndarray
+        rate_hmm = (time, rate) determined by the Baum-Welch algorithm and the Viterbi algorithm in a form of ndarray
+    returns:
+        nothing, but draws a figure
     """
     ###################
-    # stateの変化が斜め線にならないように、いくらか補正しています。
-    # forのなかがその操作です。
-    # ややこしいですが、見栄えを良くするためです
+    # output is shaped so that state changes appear vertical.
     ###################
 
     xaxis = [rate_hmm[0, 0]]
@@ -121,27 +131,28 @@ def drawHMM(spike_times, rate_hmm):
 
 def get_hmm_ratefunc(spike_times, bin_width, max_value, min_value):
     """
-    spike_times=spike時刻の列
-    bin_width=bin幅
-    max_value=spike時刻の最後の値
-    min_value=spike時刻の最初の値
-    結果：
-    隠れstateの変化(rate_func)を出力
-    rate_func = (time, state)の行列
-    例：
+    infers optimal states using the Baum-Welch algorithm and the Viterbi algorithm
+   arguments:
+        spike_times
+        bin_width: bin size
+        max_value: final spike time
+        min_value: initial spike time
+    returns:
+        hidden states (rate_func). Here rate_func is given by a matrix of (time, state)
+    example:
     rate_hmm = get_hmm_ratefunc(spike_times, bin_width, max_values, min_values)
     """
     #######################
-    # モデルパラメータの初期値を設定しています。
-    # vec_spktでspike時刻列を初めのspike時刻がスタートになるよう補正しています。
-    # vec_Xiでは観測列を得ています。
-    # vec_Xiには各stepでのspikeの個数が入っています。
+    # set the initial values of the model parameters
+    # vec_spkt: sets the initial spike time
+    # vec_Xi: acquires the observed values
+    # vec_Xi consists of the number of spikes (0, 1, 2, 3, ..) in each step.
     #######################
-    EMloop_num = 1000
+    EMloop_num = 5000
 
-    mat_A      = np.array([[0.999, 0.001], [0.001, 0.999]])
-    vec_pi     = np.array([0.5, 0.5])
-    mean_rate  = len(spike_times) / (max_value - min_value)
+    mat_A = np.array([[0.999, 0.001], [0.001, 0.999]])
+    vec_pi = np.array([0.5, 0.5])
+    mean_rate = len(spike_times) / (max_value - min_value)
 
     vec_lambda = np.empty(2)
 
@@ -154,40 +165,32 @@ def get_hmm_ratefunc(spike_times, bin_width, max_value, min_value):
 
     #########################################################
     #
-    # バウムウェルチでのモデルパラメーターの最適化
+    # Optimizing the model parameters using the Baum-Welch algorithm
     #
+    # updates parameters by hmm_E_step and hmm_M_step
     ########################################################
 
-    mat_Gamma, mat_Xi = HMM_E_step(vec_Xi, mat_A, vec_lambda, vec_pi)
+    mat_Gamma, mat_Xi = hmm_E_step(vec_Xi, mat_A, vec_lambda, vec_pi)
 
-    '''mat_A_old      = mat_A.copy()
-    vec_pi_old     = vec_pi.copy()
-    vec_lambda_old = vec_lambda.copy()
-    なぜcopy()を使うのですか。代入より一桁多く時間がかかります'''
     mat_A_old = mat_A
     vec_pi_old = vec_pi
     vec_lambda_old = vec_lambda
 
     #####################
-    # whileの評価について
-    # モデルパラメータの変化が小さくなったところを終わりとしています
-    # 具体的にはモデルパラメータの変化の差の和 sumcheck が
-    # ある値より小さくなったときにflag=1として、
-    # ループを抜けるようにしています
-    # また、ループがあまりに多いときは抜けます
+    # Evaluation in the while loop
+    # stops when the change in a model parameter becomes small
+    # set flag=1 if the sum of change in a parameter sumcheck becomes smaller than some threshold
+    # or stops if the loops are repeated so many times 
     #####################
 
     loop = 0
     flag = 0
-    while(loop <= EMloop_num and flag == 0) :
-        vec_pi_new, vec_lambda_new, mat_A_new = HMM_M_step(vec_Xi, mat_A, vec_lambda, vec_pi, mat_Gamma, mat_Xi)
+    while(loop <= EMloop_num and flag == 0):
+        vec_pi_new, vec_lambda_new, mat_A_new = hmm_M_step(vec_Xi, mat_A, vec_lambda, vec_pi, mat_Gamma, mat_Xi)
 
-        '''vec_pi     = vec_pi_new.copy()
-        vec_lambda = vec_lambda_new.copy()
-        mat_A      = mat_A_new.copy()'''
-        vec_pi     = vec_pi_new
+        vec_pi = vec_pi_new
         vec_lambda = vec_lambda_new
-        mat_A      = mat_A_new
+        mat_A = mat_A_new
 
         sum_check = 0.0
         num_state = len(vec_pi)
@@ -198,44 +201,35 @@ def get_hmm_ratefunc(spike_times, bin_width, max_value, min_value):
 
         sum_check += sum(sum(abs(mat_A_old - mat_A)))
 
-        if (sum_check / (1.0 * num_state * (num_state + 2)) < 1.0e-7) :
+        if (sum_check / (1.0 * num_state * (num_state + 2)) < 1.0e-7):
             flag = 1
-
-        '''mat_A_old      = mat_A.copy()
-        vec_pi_old     = vec_pi.copy()
-        vec_lambda_old = vec_lambda.copy()'''
-        mat_A_old      = mat_A
-        vec_pi_old     = vec_pi
+        mat_A_old = mat_A
+        vec_pi_old = vec_pi
         vec_lambda_old = vec_lambda
 
-        E_res     = HMM_E_step(vec_Xi, mat_A, vec_lambda, vec_pi)
-        mat_Gamma = E_res[0]
-        mat_Xi    = E_res[1]
+        mat_Gamma, mat_Xi = hmm_E_step(vec_Xi, mat_A, vec_lambda, vec_pi)
 
         loop += 1
 
-    print("loop",loop)
     #############################################
     #
-    # ビタビアルゴリズムで最適な状態列を求める
-    # stateは 0 or 1 で表される
+    #  Estimate an optimal sequence of states using the Viterbi algorithm
+    # state is represented as 0 or 1 here 
     #
     #############################################
 
-    vec_hidden = HMM_Viterbi(vec_Xi, mat_A, vec_lambda, vec_pi)
+    vec_hidden = hmm_Viterbi(vec_Xi, mat_A, vec_lambda, vec_pi)
 
     ############################################
-    #
-    # 以下で状態列の値をplotしやすいように,実際のrateに変換してる
-    #
-    ###########################################
+    # vec_hidden: 0 or 1, representing the hidden state
+    # two states are transformed into the rates
+    ############################################
 
-    rate_func  = np.empty([len(vec_Xi), 2])
+    rate_func = np.empty([len(vec_Xi), 2])
 
     c_time = 0.0
-
-    for n in range(0, len(vec_Xi)) :
-        state_id        = vec_hidden[n]
+    for n in range(0, len(vec_Xi)):
+        state_id = vec_hidden[n]
         rate_func[n][0] = round(c_time * 100) / 100.0
         rate_func[n][1] = round(vec_lambda[int(state_id)] * 100) / (bin_width * 100.0)
 
@@ -244,20 +238,25 @@ def get_hmm_ratefunc(spike_times, bin_width, max_value, min_value):
     return rate_func
 
 
+################################
+#
+# Function acquiring the observation sequence from a spike train
+#
+################################
 def get_vec_Xi(vec_spkt, bin_width):
     """
-    vec_spkt=初めのspikeがきた時を0としたspike時刻列
-    bin_width=bin幅
-    結果：
-    観測列vec_Xiを出力。
-    vec_Xiには各stepのspikeの個数が入ってます
+    arguments:
+        vec_spkt: spike time measured from the initial spike
+        bin_width: bin size
+    returns:
+        vec_Xi: observation values consisting of spike counts in each bin.
     """
     spkt_dura = vec_spkt[len(vec_spkt) - 1]
-    bin_num   = int(math.ceil(spkt_dura / bin_width))
-    vec_Xi    = np.zeros(bin_num)
+    bin_num = int(math.ceil(spkt_dura / bin_width))
+    vec_Xi = np.zeros(bin_num)
 
     ##########
-    # spike時刻が各stepにあれば1を足していく
+    # counting spikes
     ##########
     for x in vec_spkt:
         bin_id = int(math.floor(x / bin_width))
@@ -265,51 +264,45 @@ def get_vec_Xi(vec_spkt, bin_width):
             vec_Xi[bin_id] += 1
     return vec_Xi
 
-####
-# HMM_E_step
-# carries out the E step.
 
-# arguments:
-# vec_Xi: numpy array class
-# mat_A: numpy array class
-# vec_lambda: numpy array class
-# vec_pi: numpy array class
-
-# returns
-# mat_Gamma: numpy array class
-# mat_Xi: numpy array class
-####
-
-def HMM_E_step(vec_Xi, mat_A, vec_lambda, vec_pi):
+###########################
+#
+# hmm_E_step
+# computes expectation 
+#
+###########################
+def hmm_E_step(vec_Xi, mat_A, vec_lambda, vec_pi):
     """
-    vec_Xi=観測列。各stepのspikeの個数が入ってます.
-    mat_A=状態遷移確率行列
-    vec_lambda=それぞれの状態でのbin内のspikeの平均値
-    vec_pi=初期状態の確率
+    arguments:
+        vec_Xi: observation consisting of spike counts
+        mat_A: transition matrix
+        vec_lambda: spikes in each bin
+        vec_pi: initial probabilities
+    returns:
+            mat_Gamma: a matrix consisting of P(state i at time t, vec_Xi |model) 
+            mat_Xi: a matrix consisting of P(state i at time t and state j at time t+1, vec_Xi|model)
     """
-    mat_emission      = get_mat_emission(vec_Xi, vec_lambda)
-    vec_C, mat_alpha  = get_alpha_C(mat_A, vec_pi, mat_emission)
-    mat_beta          = get_beta(mat_A, vec_pi, mat_emission, vec_C)
+    mat_emission = get_mat_emission(vec_Xi, vec_lambda)
+    vec_C, mat_alpha = get_alpha_C(mat_A, vec_pi, mat_emission)
+    mat_beta = get_beta(mat_A, vec_pi, mat_emission, vec_C)
     mat_Gamma, mat_Xi = get_Gamma_Xi(mat_A, mat_emission, mat_alpha, mat_beta, vec_C)
 
-    '''res = [mat_Gamma, mat_Xi]
-
-    return res'''
     return mat_Gamma, mat_Xi
 
 
 def get_mat_emission(vec_Xi, vec_lambda):
     """
-    vec_Xi=観測列
-    vec_lambda=それぞれの状態でのbin内のspikeの平均値
-    結果：
-    stateごとに実際の各observationを得る確率を出力
-    mat_emission=(step,state)の行列
+    arguments:
+        vec_Xi: observation
+        vec_lambda: average spikes in each bin
+    returns:
+        mat_emission: probability of obtaining each observation in each state
+        mat_emission: matrix consisting of (step,state)
     """
     ############
-    # poisson分布を仮定しています。
-    # vec_lambdaがpoisoon分布の平均値に対応します
-    # stateごとに実際の各observationを得る確率を入れていきます
+    # assuming the Poisson distribution
+    # vec_lambda: parameter of the Poisson distribution representing the mean
+    # gives the probability of having the observation
     #############
     mat_emission = np.array([[pow(x, y) * pow(math.e, -1.0 * x) / math.factorial(y) for x in vec_lambda] for y in vec_Xi])
 
@@ -318,103 +311,88 @@ def get_mat_emission(vec_Xi, vec_lambda):
 
 def get_alpha_C(mat_A, vec_pi, mat_emission):
     """
-    mat_A=状態遷移確率行列
-    vec_pi=初期状態の確率
-    mat_emission=時刻tでの観測を得る確率の行列.(step,state)
-    結果：
-    前向き変数alphaとスケーリングの係数vec_C(coefficient)を出力
+    arguments:
+        mat_A: transition matrix
+        vec_pi: initial probability
+        mat_emission: matrix consisting of the probability of having the observation (step,state)
+    returns:
+            mat_alpha: forward parameter
+            vec_C(coefficient): scaling coefficient
     """
 
     num_of_states = len(vec_pi)
     num_of_obs = len(mat_emission)
 
-    '''alpha_0 = np.array([mat_emission[0][i] * vec_pi[i] for i in range(0, num_of_states)])
-    C_0     = 0.0
-    for alpha in alpha_0 :
-        C_0 += alpha
-
-    vec_C_buf     = np.empty(num_of_obs)
-    vec_C_buf[0]  = (C_0)
-    alpha_0       = alpha_0 / C_0
-    mat_alpha_buf = []
-    mat_alpha_buf.append(list(alpha_0.copy()))
-
-    for n in range(1, num_of_obs) :
-        alpha_n = np.empty([num_of_states])
-        for i in range(0, num_of_states) :
-            sum_j = 0.0
-            for j in range(0, num_of_states) :
-                sum_j += mat_alpha_buf[n - 1][j] * mat_A[j][i]
-
-            alpha_n_i = mat_emission[n][i] * sum_j
-            alpha_n[i] = alpha_n_i
-
-        C_n = 0.0
-        for alpha in alpha_n :
-            C_n += alpha
-
-        vec_C_buf[n] = pd.Series([C_n])
-        alpha_n = alpha_n / C_n
-
-        mat_alpha_buf.append(list(alpha_n.copy()))
-
-    res = [vec_C_buf, mat_alpha_buf]
-
-    return res'''
-    # 変更後
-    alpha = np.empty((num_of_obs, num_of_states))
+    mat_alpha = np.empty((num_of_obs, num_of_states))
     coefficient = np.empty(num_of_obs)
 
     #####################
     # foward algorithm
+    #
     # initialization
-    alpha[0, :] = vec_pi * mat_emission[0, :]
+    mat_alpha[0, :] = vec_pi * mat_emission[0, :]
     # induction
-    for t in range(0, num_of_obs - 1):  # scalingもしとく
-        coefficient[t] = np.sum(alpha[t, :])
-        alpha[t, :] = alpha[t, :] / coefficient[t]
-        alpha[t+1, :] = (alpha[t, :] @ mat_A) * mat_emission[t+1, :]
-    coefficient[num_of_obs - 1] = np.sum(alpha[num_of_obs - 1, :])
-    alpha[num_of_obs - 1, :] = alpha[num_of_obs - 1, :] / coefficient[num_of_obs - 1]
+    for t in range(0, num_of_obs - 1):  # do scaling
+        coefficient[t] = np.sum(mat_alpha[t, :])
+        mat_alpha[t, :] = mat_alpha[t, :] / coefficient[t]
+        mat_alpha[t+1, :] = (mat_alpha[t, :] @ mat_A) * mat_emission[t+1, :]
+    coefficient[num_of_obs - 1] = np.sum(mat_alpha[num_of_obs - 1, :])
+    mat_alpha[num_of_obs - 1, :] = mat_alpha[num_of_obs - 1, :] / coefficient[num_of_obs - 1]
 
-    return coefficient, alpha
+    return coefficient, mat_alpha
 
 
 def get_beta(mat_A, vec_pi, mat_emission, vec_C):
     """
-    mat_A=状態遷移確率行列
-    vec_pi=初期状態の確率
-    mat_emission=時刻tでの観測を得る確率の行列.(step,state)
-    vec_C=alphaを計算するときに得られるスケーリング係数
-    結果：
-    後ろ向き変数betaを出力
+    arguments:
+        mat_A: transition matrix
+        vec_pi: initial probability
+        mat_emission: matrix consisting of the probability of having the observation (step,state)
+        vec_C: scaling coefficient obtained when computing alpha
+    returns:
+        mat_beta: backward parameter
     """
+    ##############################
+    # note given by Endo
+    # here we do not introduce matrix calculation for the state
+    # because the for-loop calculation was more rapid.
+    # we leave here the code for matrix computation.
+    ##############################
+    ##############################
+    # note:
+    # when computing mat_beta[t, :], it is not divided by vec_C[t]
+    # to avoid duplication when computing mat_Gamma
+    # when computing mat_Xi, it was divided by vec_C[t+1] to make end meets. ##############################
     num_of_states = len(vec_pi)
-    num_of_obs    = len(mat_emission)
+    num_of_obs = len(mat_emission)
 
-    # initialize1個目のデータCで割ってないやん
-    mat_beta_buf = np.zeros([num_of_obs, num_of_states])
-
-    for i in range(0, num_of_states) :
-        mat_beta_buf[num_of_obs - 1][i] = 1.0
-
-    for m in range(1, num_of_obs) :
-        n               = num_of_obs - 1 - m
-        mat_beta_buf_n1 = mat_beta_buf[n + 1]
+    mat_beta = np.zeros([num_of_obs, num_of_states])
+    ###############
+    # backward algorithm
+    #
+    # initialization
+    for i in range(0, num_of_states):
+        mat_beta[num_of_obs - 1][i] = 1.0
+    # induction
+    for m in range(1, num_of_obs):
+        n = num_of_obs - 1 - m
+        mat_beta_n1 = mat_beta[n + 1]
         mat_emission_n1 = mat_emission[n + 1]
-        mat_beta_buf_n  = mat_beta_buf[n]
-        vec_C_n1        = vec_C[n + 1]
-        for i in range(0, num_of_states) :
+        mat_beta_n = mat_beta[n]
+        vec_C_n1 = vec_C[n + 1]
+        for i in range(0, num_of_states):
             sum_j = 0.0
             mat_A_i = mat_A[i]
-            for j in range(0, num_of_states) :
-                sum_j += mat_beta_buf_n1[j] * mat_emission_n1[j] * mat_A_i[j]
+            for j in range(0, num_of_states):
+                sum_j += mat_beta_n1[j] * mat_emission_n1[j] * mat_A_i[j]
 
-            mat_beta_buf_n[i] = (sum_j / vec_C_n1)
+            mat_beta_n[i] = (sum_j / vec_C_n1)
 
-    return mat_beta_buf
+    return mat_beta
     '''
-    # 以下変更後 ここだけ元のプログラムの方が早かった。なぜだろう？
+    # the following is the matrix computation
+    num_of_states = len(vec_pi)
+    num_of_obs = len(mat_emission)
     beta = np.empty((num_of_obs, num_of_states))
     ######################
     # backward algorithm
@@ -423,205 +401,129 @@ def get_beta(mat_A, vec_pi, mat_emission, vec_C):
     # induction
     for t in range(num_of_obs - 1, 0, -1):
         beta[t - 1, :] = np.sum((mat_A * mat_emission[t, :] * beta[t, :]), axis=1) / vec_C[t]
-
     return beta'''
 
 
 def get_Gamma_Xi(mat_A, mat_emission, mat_alpha, mat_beta, vec_C):
     """
-    mat_A=状態遷移確率行列
-    mat_emission=時刻tでの観測を得る確率の行列.(step,state)
-    mat_alpha=forward algorithmによって得られる変数
-    mat_beta=backward algorithmによって得られる変数
-    vec_C=alphaを計算するときに得られるスケーリング係数
-    結果：
-    gamma,xiを出力
-    mat_Gamma=P(時刻tで状態i | vec_Xi, model)?
-    mat_Xi=　?
+      arguments:
+        mat_A: transition matrix
+        vec_pi: initial probability
+        mat_emission: matrix consisting of the probability of having the observation (step,state)
+        vec_C: scaling coefficient obtained when computing alpha
+    returns:
+            mat_Gamma: a matrix consisting of P(state i at time t, vec_Xi |model) 
+            mat_Xi: a matrix consisting of P(state i at time t and state j at time t+1, vec_Xi|model)
     """
     num_of_states = len(mat_emission[0])
-    num_of_obs    = len(mat_emission)
+    num_of_obs = len(mat_emission)
 
-    '''mat_Gamma_buf = np.zeros([num_of_obs, num_of_states])いらない'''
+    mat_Gamma = mat_alpha * mat_beta
 
-    mat_Gamma_buf = mat_alpha * mat_beta
-
-    '''mat_Xi_buf = np.zeros([num_of_obs - 1, num_of_states, num_of_states])
-    for m in range(0, num_of_obs - 1) :
-        mat_Xi_buf_m    = mat_Xi_buf[m]
-        mat_alpha_m     = mat_alpha[m]
-        mat_emission_m1 = mat_emission[m + 1]
-        mat_beta_m1     = mat_beta[m + 1]
-        vec_C_m1        = vec_C[m + 1]
-        for i in range(0, num_of_states) :
-            mat_Xi_buf_m_i = mat_Xi_buf_m[i]
-            mat_alpha_m_i = mat_alpha_m[i]
-            mat_A_i = mat_A[i]
-            for j in range(0, num_of_states) :
-                mat_Xi_buf_m_i[j] = (mat_alpha_m_i * mat_emission_m1[j] * mat_A_i[j] * mat_beta_m1[j]) / vec_C_m1
-    なんでvec_Cでわるのかわかりません。
-    betaを求める際にすでに割っていると思うのですが。
-    下の変更はforを行列計算にしただけなので、アルゴリズムはかえてません'''
-
-    xi = np.empty((num_of_obs - 1, num_of_states, num_of_states))
-    for t in range(0, num_of_obs - 1):  # reshapeがあるので案外時間かかるかもしれない
-        xi[t, :, :] = mat_alpha[t, :].reshape(
+    mat_Xi = np.empty((num_of_obs - 1, num_of_states, num_of_states))
+    for t in range(0, num_of_obs - 1):
+        mat_Xi[t, :, :] = mat_alpha[t, :].reshape(
             num_of_states, 1) * mat_A * mat_emission[t + 1, :] * mat_beta[t + 1, :] / vec_C[t+1]
+    ################
+    # note
+    # procedure of dividing by vec_C when computing mat_Xi is complicated but
+    # this is because mat_beta[t+1, :] was not divided by vec_C[t+1].
+    ################
+    return mat_Gamma, mat_Xi
 
-    '''res = [mat_Gamma_buf, mat_Xi_buf]'''
 
-    return mat_Gamma_buf, xi
-
-####
-# HMM_M_step
-# carries out the M step.
-# updates (vector pi, vector lambda, matrix A).
-
-# arguments:
-# vec_Xi: numpy array class
-# mat_A: numpy array class
-# vec_lambda: numpy array class
-# vec_pi: numpy array class
-# mat_Gamma: numpy array class
-# mat_Xi: numpy array class
-
-# returns
-# vec_pi_new: numpy array class
-# vec_lambda_new: numpy array class
-# mat_A_new: numpy array class
-####
-
-def HMM_M_step(vec_Xi, mat_A, vec_lambda, vec_pi, mat_Gamma, mat_Xi):
+###########################
+#
+# hmm_M_step
+# this is a M step, maximizing the likelihood
+#
+###########################
+def hmm_M_step(vec_Xi, mat_A, vec_lambda, vec_pi, mat_Gamma, mat_Xi):
     """
-    vec_Xi=観測列
-    mat_A=状態遷移確率行列
-    vec_lambda=それぞれの状態でのbin内のspikeの平均値
-    vec_pi=初期状態の確率
-    mat_Gamma=P(時刻tで状態i | vec_Xi, model)?
-    mat_Xi= ?
-    結果：
-    一度更新したモデルパラメータ　vec_pi_new, vec_lambda_new, mat_A_new　を出力
+    arguments:
+        mat_A: transition matrix
+        vec_pi: initial probability
+        mat_Gamma: a matrix consisting of P(state i at time t, vec_Xi |model) 
+        mat_Xi: a matrix consisting of P(state i at time t and state j at time t+1, vec_Xi|model)
+    returns:
+        updated parameters: vec_pi_new, vec_lambda_new, mat_A_new
     """
     num_of_states = len(mat_A)
     num_of_obs = len(vec_Xi)
 
-    ####################
-    # 新しいモデルパラメーターを求める
-    ####################
-    '''pi_denom = 0.0
-
-    pi_denom += sum(mat_Gamma[0])
-
-    vec_pi_new = mat_Gamma[0] / pi_denom
-    まとめときます'''
+    #############################
+    #
+    # computes new parameters
+    #
+    #############################
     #################
-    # pi
+    # vec_pi
     ################
     vec_pi_new = mat_Gamma[0] / np.sum(mat_Gamma[0])
 
-    # maxmize wrt lambda vector
-    '''vec_lambda_new = np.empty(num_of_states)
-    for k in range(0, num_of_states):
-        lambda_denom = 0.0
-        lambda_nume = 0.0
-        for n in range(0, num_of_obs):
-            lambda_denom += mat_Gamma[n][k]
-            lambda_nume += mat_Gamma[n][k] * vec_Xi[n]
-
-        if(lambda_denom == 0.0):
-            vec_lambda_new[k] = 0.0
-        else:
-            vec_lambda_new[k] = lambda_nume / lambda_denom'''
     #################
     # vec_lambda
     #################
     vec_lambda_new = np.sum(mat_Gamma * vec_Xi.reshape(num_of_obs, 1), axis=0) / np.sum(mat_Gamma, axis=0)
 
-    # maxmize wrt A matrix
-    '''mat_A_new = np.zeros([num_of_states, num_of_states])
-    for j in range(0, num_of_states) :
-        A_denome = 0.0
-        for n in range(0, num_of_obs - 1) :
-            for mat_Xi_n_j_l in mat_Xi[n][j] :
-                A_denome += mat_Xi_n_j_l
-
-        for k in range(0, num_of_states) :
-            A_nume = 0.0
-            for mat_Xi_n in mat_Xi :
-                A_nume += mat_Xi_n[j][k]
-            if(A_denome == 0.0) :
-                mat_A_new[j][k] = 0.0
-            else :
-                mat_A_new[j][k] = A_nume / A_denome'''
     ###############
-    # a
+    # mat_A
     ###############
     total_gamma_a = np.zeros((1, num_of_states))
     for t in range(0, num_of_obs - 1):
         total_gamma_a += mat_Gamma[t, :]
-    total_xi = np.sum(mat_Xi, axis=0)  # (2,2)の行列 = (i,j)
-    mat_A_new = total_xi / total_gamma_a.T  # i同士の割り算
-
-    '''res = [vec_pi_new, vec_lambda_new, mat_A_new]
-    return res
-    そのまま書いた方が代入ぶんの時間を省ける'''
+    total_xi = np.sum(mat_Xi, axis=0)  # (i,j): 2 by 2 matrix
+    mat_A_new = total_xi / total_gamma_a.T  # division between i-th ones 
     return vec_pi_new, vec_lambda_new, mat_A_new
 
-####
-# HMM_Viterbi
-# carries out the Viterbi algorithm.
-# arguments:
-# vec_Xi: numpy array class
-# mat_A: numpy array class
-# vec_lambda: numpy array class
-# vec_pi: numpy array class
 
-# returns
-# vec_hs_seq: index of the optimal vec_lambda
-####
-
-def HMM_Viterbi(vec_Xi, mat_A, vec_lambda, vec_pi):
+#####################################
+#
+#  a function for determining an optimal state sequence with the Viterbi algorithm
+#
+#####################################
+def hmm_Viterbi(vec_Xi, mat_A, vec_lambda, vec_pi):
     """
-    vec_Xi=観測列
-    mat_A=状態遷移確率行列
-    vec_lambda=それぞれの状態でのbin内のspikeの平均値
-    vec_pi=初期状態の確率
-    結果：
-    ビタビアルゴリズムで最適なstate列 vec_hs_seq を得て、
-    出力する
+    arguments:
+        vex_Xi: observation sequence
+        mat_A: transition matrix
+        vec_lambda: average spike rate in each bin
+        vec_pi: initial probability
+    returns:
+        vec_hs_seq: optimal state sequence 
     """
-    mat_emission  = get_mat_emission(vec_Xi, vec_lambda)
+    mat_emission = get_mat_emission(vec_Xi, vec_lambda)
     num_of_states = len(mat_A)
-    num_of_obs    = len(vec_Xi)
-    mat_hs_seq    = np.zeros([num_of_states, num_of_obs])
-    vec_logp_seq  = np.zeros(num_of_states)
+    num_of_obs = len(vec_Xi)
+    mat_hs_seq = np.zeros([num_of_states, num_of_obs])
+    vec_logp_seq = np.zeros(num_of_states)
 
-    for j in range(0, num_of_states) :
+    for j in range(0, num_of_states):
         mat_hs_seq[j][0] = j
-        if (vec_pi[j] * mat_emission[0][j] == 0) :
+        if (vec_pi[j] * mat_emission[0][j] == 0):
             vec_logp_seq[j] = -np.inf
-        else :
-            vec_logp_seq[j]  = math.log(vec_pi[j] * mat_emission[0][j]) / math.log(10)
+        else:
+            vec_logp_seq[j] = math.log(vec_pi[j] * mat_emission[0][j]) / math.log(10)
 
-    for n in range(1, num_of_obs) :
+    for n in range(1, num_of_obs):
         # copy the seq. up to n - 1
-        mat_hs_seq_buf   = mat_hs_seq.copy()
+        mat_hs_seq_buf = mat_hs_seq.copy()
         vec_logp_seq_buf = vec_logp_seq.copy()
 
-        for j in range(0, num_of_states) :
+        for j in range(0, num_of_states):
             vec_h_logprob_i = np.zeros(num_of_states)
-            for i in range(0, num_of_states) :
+            for i in range(0, num_of_states):
                 vec_h_logprob_i[i] = vec_logp_seq[i] + math.log(mat_emission[n][j] * mat_A[i][j]) / math.log(10)
 
             max_element = max(vec_h_logprob_i)
-            max_pos     = np.where(vec_h_logprob_i == max_element)[0][0]
+            max_pos = np.where(vec_h_logprob_i == max_element)[0][0]
 
             vec_logp_seq_buf[j] = max_element
-            mat_hs_seq_buf[j]   = mat_hs_seq[max_pos].copy()
+            mat_hs_seq_buf[j] = mat_hs_seq[max_pos].copy()
 
             mat_hs_seq_buf[j][n] = j
 
-        mat_hs_seq   = mat_hs_seq_buf.copy()
+        mat_hs_seq = mat_hs_seq_buf.copy()
         vec_logp_seq = vec_logp_seq_buf.copy()
 
     max_element = max(vec_logp_seq)
@@ -631,12 +533,3 @@ def HMM_Viterbi(vec_Xi, mat_A, vec_lambda, vec_pi):
     vec_hs_seq = mat_hs_seq[max_pos].copy()
 
     return vec_hs_seq
-
-
-if __name__ == "__main__":
-    # 実行するもの
-
-    data = np.loadtxt("data4.txt")
-
-    HMM(data)
-
