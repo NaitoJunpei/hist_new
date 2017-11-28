@@ -49,10 +49,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.fft as fft
 import math
-import time
 
 def KDE(spike_times) :
-    start = time.time()
     spike_times = np.array(sorted(spike_times))
     max_value = max(spike_times)
     min_value = min(spike_times)

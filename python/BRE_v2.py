@@ -63,9 +63,12 @@ def EMmethod(ISI, beta0) :
 
         #------------- revision in version 2 (2017/11/24) begin
         indexes = np.where(ISI[:-1] > 0)[0]
-        beta_new = sum((kalman[1][indexes + 1] + kalman[1][indexes] - 2 * kalman[2][indexes]
-                    + (kalman[0][indexes + 1] - kalman[0][indexes])
-                    * (kalman[0][indexes + 1] - kalman[0][indexes])) / ISI[indexes])
+        kalman0 = kalman[0]
+        kalman1 = kalman[1]
+        kalman2 = kalman[2]
+        beta_new = sum((kalman1[indexes + 1] + kalman1[indexes] - 2 * kalman2[indexes]
+                    + (kalman0[indexes + 1] - kalman0[indexes])
+                    * (kalman0[indexes + 1] - kalman0[indexes])) / ISI[indexes])
         t0 = N - 1 - len(indexes)
         # revised by Naito 2017/11/24
         #------------- revision in version 2 (2017/11/24) end
@@ -95,31 +98,38 @@ def KalmanFilter(ISI, beta) :
     VL_N = np.empty(N)
     COVL_N = np.empty(N)
 
-    EL[0][0] = (A + math.sqrt(A * A + 4 * IVL)) / 2
-    VL[0][0] = 1 / (1 / IVL + 1 / pow(EL[0][0], 2))
+    EL0 = EL[0]
+    EL1 = EL[1]
+    VL0 = VL[0]
+    VL1 = VL[1]
+
+    EL0[0] = EL0i1 = (A + math.sqrt(A * A + 4 * IVL)) / 2
+    VL0[0] = VL0i1 = 1 / (1 / IVL + 1 / pow(EL0i1, 2))
 
     # prediction and filtering
     for i in range(0, N - 1) :
-        EL[1][i] = EL[0][i]
-        VL[1][i] = VL[0][i] + ISI[i] / (2 * beta)
+        EL1[i] = EL1i = EL0i1
+        VL1[i] = VL1i = VL0i1 + ISI[i] / (2 * beta)
 
-        A = EL[1][i] - ISI[i + 1] * VL[1][i]
-        EL[0][i + 1] = (A + math.sqrt(A * A + 4 * VL[1][i])) / 2
-        VL[0][i + 1] = 1 / (1 / VL[1][i] + 1 / pow(EL[0][i + 1], 2))
+        A = EL1i - ISI[i + 1] * VL1i
+        EL0[i + 1] = EL0i1 = (A + math.sqrt(A * A + 4 * VL1i)) / 2
+        VL0[i + 1] = VL0i1 = 1 / (1 / VL1i + 1 / pow(EL0i1, 2))
 
     # smoothing
-    EL_N[N - 1] = EL[0][N - 1]
-    VL_N[N - 1] = VL[0][N - 1]
-
+    # EL_N[N - 1] = EL_Ni1 = EL0[N - 1]
+    # VL_N[N - 1] = VL_Ni1 = VL0[N - 1]
+    EL_N[N - 1] = EL_Ni1 = EL0i1
+    VL_N[N - 1] = VL_Ni1 = VL0i1
+    
     for i in range(0, N - 1) :
         i = N - 2 - i
-        H = VL[0][i] / VL[1][i]
+        H = VL0[i] / VL1[i]
 
-        EL_N[i] = EL[0][i] + H * (EL_N[i + 1] - EL[1][i])
-        VL_N[i] = VL[0][i] + H * H * (VL_N[i + 1] - VL[1][i])
+        EL_N[i] = EL_Ni1 = EL0[i] + H * (EL_Ni1 - EL1[i])
+        VL_N[i] = VL_Ni1 = VL0[i] + H * H * (VL_Ni1 - VL1[i])
         # COVL_N[i] = H * VL_N[i + 1]
 
-    COVL_N = (VL[0][:-1] / VL[1][:-1]) * VL_N[1:]
+    COVL_N = (VL0[:-1] / VL1[:-1]) * VL_N[1:]
 
     return [EL_N, VL_N, COVL_N]
 
