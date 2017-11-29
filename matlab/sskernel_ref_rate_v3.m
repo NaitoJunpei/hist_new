@@ -132,7 +132,7 @@ C = zeros(1,length(W));
 C_min = Inf;
 
 for k = 1: length(W)
-	w = W(k);     
+        w = W(k);     
     [C(k) yh] = CostFunction(y_hist,N,w,dt);
     
     if C(k) < C_min
@@ -164,7 +164,7 @@ f2 = CostFunction(y_hist,N,logexp(c2),dt);
 
 k = 1;
 while abs(b-a) > tol*(abs(c1)+abs(c2)) && k <= 20
-	if (f1 < f2)    
+        if (f1 < f2)    
         b = c2;
         c2 = c1;
 
@@ -265,7 +265,6 @@ else
     end
 end
 
-% *変更 コメント
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % sub functions
@@ -273,14 +272,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% コストを計算する関数です
+% computing the cost function
 %
 % arguments:
 %   y_hist: Sample signal vector.
 %   N: num of spikes
 %   w: Kernel bandwidth (the standard deviation) in unit of
 %       the sampling resolution of x.
-%   dt: Binの時間幅
+%   dt: time step
 % returns:
 %   C: cost
 %   yh: density
@@ -296,7 +295,6 @@ C = C * N* N;
 %formula for rate
 %C = dt*sum( yh.^2 - 2*yh.*y_hist + 2/sqrt(2*pi)/w*y_hist );
 
-% *変更 コメント
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % reflection boundary part
 %

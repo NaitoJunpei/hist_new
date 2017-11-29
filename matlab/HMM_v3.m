@@ -23,19 +23,17 @@ function [rate_func] = HMM_v3(x)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% *変更 コメント
 % determine the times of initiation and termination
 % bin size =  5*(inter-spike interval)
 onset = x(1) - 0.001 * (x(length(x)) - x(1));
 offset = x(length(x)) + 0.001 * (x(length(x)) - x(1));
 optw = (offset-onset)/(length(x)) * 5;
 
-% *変更 コメント
-% sample data vectorとbin sizeを入力とし、各ビンのレートを計算
+% input: sample data vector and bin size
+% compute the rate in each bin
 rate_func = get_hmm_ratefunc(x, optw);
 
-% *変更 コメント
-% グラフを描画します。
+% draw a graph
 drawHMM(rate_func)
 end
 
@@ -45,7 +43,6 @@ end
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% *変更 コメント
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function acquiring the observation sequence from a spike train
 %
@@ -67,7 +64,6 @@ for i=1:length(vec_spkt)
 end
 end
 
-% *変更 コメント
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function to get emisson probs.
 % assuming the Poisson distribution
@@ -83,14 +79,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function mat_emission = get_mat_emission(vec_Xi, vec_lambda)
 mat_emission=zeros(length(vec_Xi),length(vec_lambda));
-% *変更 削除
+% removed:
 % for n=1:length(vec_Xi)
 %    for i=1:length(vec_lambda)
 %        mat_emission(n,i)=vec_lambda(i)^vec_Xi(n)*exp(-1.0*vec_lambda(i))/factorial(vec_Xi(n));
 %    end
 % end
-% 削除ここまで
-% 追記
+% 
 for n=vec_Xi
     for i=vec_lambda
         mat_emission(n,i) = i^n*exp(-1.0*i/factorial(n));
@@ -98,7 +93,6 @@ for n=vec_Xi
 end
 end
 
-% *変更 コメント
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function to get alpha and C
 %
@@ -116,29 +110,27 @@ num_of_obs=length(mat_emission(:, 1));
 
 vec_C = zeros(num_of_obs,1);
 %n=1
-% *変更 削除
+% removed:
 % for i=1:num_of_states
 %     mat_alpha(1,i) = mat_emission(1,i) * vec_pi(i);
 % end
-% 追記
+
 mat_alpha(1,i) = mat_emission(1,:)'.*vec_pi;
 vec_C(1) = sum(mat_alpha(1,:));
-% *変更 削除
+% removed:
 % for i=1:num_of_states
 %     mat_alpha(1,i) = mat_alpha(1,i)/vec_C(1);
 % end
-% 追記
 mat_alpha(1,i) = mat_alpha(1,i)./vec_C(1);
 
 %n>1
 for n=2:num_of_obs
     for i=1:num_of_states
-        % *変更 削除
+        % removed:
         % sum_j=0.0;
         % for j=1:num_of_states
         %    sum_j = sum_j + mat_alpha(n-1,j)*mat_A(j,i);
         % end
-        % 追記
         sum_j = sum(mat_alpha(n-1,:)'.*mat_A(:,i))
         mat_alpha(n,i) = mat_emission(n,i)*sum_j;
     end
@@ -147,7 +139,6 @@ for n=2:num_of_obs
 end
 end
                     
-% *変更 コメント
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function to get beta
 %
@@ -173,19 +164,17 @@ mat_beta(num_of_obs,:)=1.0;
 for m=2:num_of_obs
     n=(num_of_obs+1-m);
     for i=1:num_of_states
-        % *変更 削除
+        % removed:
         % sum_j=0.0;
         % for j=1:num_of_states
         %    sum_j= sum_j+mat_beta(n+1,j)*mat_emission(n+1,j)*mat_A(i,j);
         % end
-        % 追記
         sum_j = sum(mat_beta(n+1,:).*mat_emission(n+1,:).*mat_A(i,:));
         mat_beta(n,i)=(sum_j/vec_C(n+1));
     end
 end
 end
 
-% *変更 コメント
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function to get Gamma
 %
@@ -202,30 +191,27 @@ function [mat_Gamma, mat_Xi] = get_Gamma_Xi(mat_A, mat_emission, mat_alpha, mat_
 [num_of_obs, num_of_states] = size(mat_emission);
 % gamma matrix
 mat_Gamma=zeros(num_of_obs, num_of_states);
-% *変更 削除
+% removed:
 % for n=1:num_of_obs
 %    for i=1:num_of_states
 %        mat_Gamma(n,i)=mat_alpha(n,i)*mat_beta(n,i);
 %     end
 % end
-% 追記
 mat_Gamm = mat_alpha.*mat_beta;
 
 % Xi matrix
 mat_Xi=zeros(num_of_obs-1, num_of_states, num_of_states);
 for m=1:num_of_obs-1
-    % *変更 削除
+    % removed:
     % for i=1:num_of_states
     %    for j=1:num_of_states
     %        mat_Xi(m,i,j)=(mat_alpha(m,i)*mat_emission(m+1,j)*mat_A(i,j)*mat_beta(m+1,j))/vec_C(m+1);
     %    end
     % end
-    % 追記
     mat_Xi(m,:,:)=mat_A*mat_alpha(m,:)'.*mat_emission(m+1,:).*mat_A*mat_beta(m+1,:)/vecC(m+1);
 end
 end
 
-% *変更 コメント
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % HMM_E_step computes expectation
 %
@@ -249,7 +235,6 @@ mat_beta=get_beta(mat_A, vec_pi, mat_emission, vec_C);
 [mat_Gamma, mat_Xi]=get_Gamma_Xi(mat_A, mat_emission, mat_alpha, mat_beta, vec_C);
 end
 
-% *変更 コメント
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % HMM_M_step maximize the likelihood
 %
@@ -274,12 +259,11 @@ vec_lambda_new=zeros(num_of_states,1);
 for k=1:num_of_states
     lambda_denom=sum(mat_Gamma(:,k));
 
-    % *変更 削除
+    % removed:
     % lambda_nume=0.0;
     % for n=1:num_of_obs
     %    lambda_nume=lambda_nume+(mat_Gamma(n,k)*vec_Xi(n));
     % end
-    % 追記
     lambda_nume=sum(mat_Gamma(:,k).*vec_Xi);
     
     if lambda_denom==0.0
@@ -292,14 +276,13 @@ end
 % maximize wrt A matirx
 mat_A_new=zeros(num_of_states, num_of_states);
 for j=1:num_of_states
-    % *変更 削除
+    % removed:
     %A_denome=0.0;
     %for n=1:num_of_obs-1
     %    for l=1:num_of_states
     %        A_denome=A_denome+mat_Xi(n,j,l);
     %    end
     %end
-    % 追記
     A_denome=mat_Xi(:,j,:);
     for k=1:num_of_states
         A_nume=0.0;
@@ -315,7 +298,6 @@ for j=1:num_of_states
 end
 end
 
-% *変更 コメント
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % HMM_Viterbi
 %   function for determining an optimal state squence with the Viterbi algorithm
@@ -369,7 +351,6 @@ end
 vec_hs_seq=mat_hs_seq(max_pos,:);
 end
 
-% *変更 コメント
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % get_hmm_ratefunc ompute the transition between the hidden states
 %
@@ -388,7 +369,7 @@ function rate_func= get_hmm_ratefunc(spike_time, bin_width)
 % vec_spkt: sets the initial spike time
 % vec_Xi: acquires the observed values
 % vec_Xi consists of the number of spikes (0, 1, 2, 3, ..) in each step.
-EMloop_num=5000;		% number of EM itteration
+EMloop_num=5000;    % number of EM iteration
 mat_A=[0.999 0.001; 0.001 0.999];
 vec_pi=[0.5 0.5];
 mean_rate=length(spike_time)/(spike_time(length(spike_time))-spike_time(1));
@@ -421,7 +402,7 @@ while (loop<=EMloop_num && flag==0)
     
     sum_check=0.0;
     num_state=length(vec_pi);
-    % *変更 削除
+    % removed:
     %for i=1:num_state
     %    for j=1:num_state
     %        sum_check=sum_check+abs(mat_A_old(i,j)-mat_A(i,j));
@@ -429,7 +410,6 @@ while (loop<=EMloop_num && flag==0)
     %    sum_check=sum_check+abs(vec_pi_old(i)-vec_pi(i));
     %    sum_check=sum_check+abs(vec_lambda_old(i)-vec_lambda(i));
     %end
-    % 追記
     sum_check=sum(sum(abs(mat_A_old.-mat_A)));
     sum_check=sum_check+sum(abs(vec_pi_old(i)-vec_pi(i)));
     sum_check=sum_check+sum(abs(vec_lambda_old(i)-vec_lambda(i)));

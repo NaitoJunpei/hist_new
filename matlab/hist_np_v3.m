@@ -84,7 +84,8 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Estimate the fano factor for each bin (Step 2 in ref[1] pp %3129-3130)
-%‚±‚ÌŠÖ”‚ÍŒ»İg‚í‚ê‚Ä‚¢‚Ü‚¹‚ñ.
+%this function is not used here.
+
 %function  f = est_fano( count , est_fano )
 %if count<3
 %    f = 1.0;
