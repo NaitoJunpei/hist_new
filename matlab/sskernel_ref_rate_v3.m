@@ -1,17 +1,17 @@
-function [y,t,optw,W,C,confb95,yb] = sskernel_rate_v2(x,tin,W)
-% [y,t,optw,W,C,confb95,yb] = sskernel(x,t,W)
+function [y,t,optw,W,C,confb95,yb] = sskernel_ref_rate_v3(x,tin,W)
+% [y,t,optw,W,C,confb95,yb] = sskernel_ref_rate_v3(x,t,W)
 %
-% Function `sskernel' returns an optimized kernel density estimate 
+% Function `sskernel_ref_rate_v3' returns an optimized kernel density estimate
 % using a Gauss kernel function.
 %
 % Examples:
 % >> x = 0.5-0.5*log(rand(1,1e3)); t = linspace(0,3,1000);
-% >> [y,t,optw] = sskernel(x,t);
+% >> [y,t,optw] = sskernel_ref_rate_v3(x,t);
 % This example produces a vector of kernel density estimates, y, at points
 % specified in a vector t, using an optimized bandwidth, optw (a standard 
 % deviation of a normal density function).
 % 
-% >> sskernel(x);
+% >> sskernel_ref_rate_v3(x);
 % By calling the function without output arguments, the estimated density 
 % is displayed along with 95% bootstrap confidence intervals.
 %
@@ -45,19 +45,19 @@ function [y,t,optw,W,C,confb95,yb] = sskernel_rate_v2(x,tin,W)
 %
 % 
 % Usage:
-% >> [y,t,optw] = sskernel(x);
+% >> [y,t,optw] = sskernel_ref_rate_v3(x);
 % When t is not given in the input arguments, i.e., the output argument t 
 % is generated automatically.
 %
 % >> W = linspace(0.01,1,20);
-% >> [y,t,optw] = sskernel(x,t,W);
+% >> [y,t,optw] = sskernel_ref_rate_v3(x,t,W);
 % The optimal bandwidth is selected from the elements of W.
 %
-% >> [y,t,optw] = sskernel(x,t,0.1);
+% >> [y,t,optw] = sskernel_ref_rate_v3(x,t,0.1);
 % If the density estimate with a given bandwidth, simply put a scalar value
 % as W. The computation is faster than the built-in function, ksdensity.
 %
-% >> [y,t,optw,confb95,yb] = sskernel(x);
+% >> [y,t,optw,confb95,yb] = sskernel_ref_rate_v3(x);
 % This additionally computes 95% bootstrap confidence intervals, confb95.
 % The bootstrap samples are provided as yb.
 % 
@@ -89,9 +89,9 @@ function [y,t,optw,W,C,confb95,yb] = sskernel_rate_v2(x,tin,W)
 % Hideaki Shimazaki 
 % http://2000.jukuin.keio.ac.jp/shimazaki
 %
-% 170926 reflection boundaly
+% 170926 reflection boundary by Kazuki Nakamura
+% 171128 Add comments by Kazuki Nakamura
 %
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parameters Settings
 x = reshape(x,1,numel(x));
@@ -210,7 +210,7 @@ if nargout == 0 || nargout >= 6
         xb = x_ab(idx);
         y_histb = histc(xb,t-dt/2)/dt/N;
     
-        yb_buf = fftkernel(y_histb,optw/dt);
+        yb_buf = fftkernel_ref(y_histb,optw/dt);
         yb_buf = yb_buf / sum(yb_buf*dt);
         
         yb(i,:) = interp1(t,yb_buf,tin);
@@ -265,9 +265,28 @@ else
     end
 end
 
+% *変更 コメント
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% sub functions
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% コストを計算する関数です
+%
+% arguments:
+%   y_hist: Sample signal vector.
+%   N: num of spikes
+%   w: Kernel bandwidth (the standard deviation) in unit of
+%       the sampling resolution of x.
+%   dt: Binの時間幅
+% returns:
+%   C: cost
+%   yh: density
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [C yh] = CostFunction(y_hist,N,w,dt)
-yh = fftkernel(y_hist,w/dt);  %density
+yh = fftkernel_ref(y_hist,w/dt);  %density
 
 %formula for density
 C = sum(yh.^2)*dt - 2* sum(yh.*y_hist)*dt...
@@ -277,24 +296,43 @@ C = C * N* N;
 %formula for rate
 %C = dt*sum( yh.^2 - 2*yh.*y_hist + 2/sqrt(2*pi)/w*y_hist );
 
-    
-function y = fftkernel(x,w)
-% y = fftkernel(x,w)
+% *変更 コメント
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% reflection boundary part
 %
-% Function `fftkernel' applies the Gauss kernel smoother to 
+% arguments:
+%   x: Sample signal vector.
+%   w: Kernel bandwidth (the standard deviation) in unit of
+%       the sampling resolution of x.
+% returns:
+%   yh: density
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function yh = fftkernel_ref(x,w)
+yh = fftkernel(x,w);
+halflen = ceil(length(x)/2);
+remlen = length(x) - halflen;
+addleft = fftkernel(horzcat(zeros(1,remlen),x(1:halflen)),w);
+addright = fftkernel(horzcat(x(halflen+1:length(x)),zeros(1,remlen)),w);
+yh = yh + horzcat(fliplr(addleft(1:halflen)),zeros(1,remlen)) + horzcat(zeros(1,remlen),fliplr(addright(halflen+1:length(addright))));
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Function `fftkernel' applies the Gauss kernel smoother to
 % an input signal using FFT algorithm.
 %
 % Input argument
-% x:    Sample signal vector. 
-% w: 	Kernel bandwidth (the standard deviation) in unit of 
-%       the sampling resolution of x. 
+% x:    Sample signal vector.
+% w:     Kernel bandwidth (the standard deviation) in unit of
+%       the sampling resolution of x.
 %
 % Output argument
-% y: 	Smoothed signal.
+% y:     Smoothed signal.
 %
 % MAY 5/23, 2012 Author Hideaki Shimazaki
 % RIKEN Brain Science Insitute
 % http://2000.jukuin.keio.ac.jp/shimazaki
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function y = fftkernel(x,w)
 
 L = length(x);
 Lmax = max(1:L+3*w);
@@ -312,6 +350,7 @@ y = ifft(X.*K,n);
 y = y(1:L);
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function y = logexp(x)
 idx = x<1e2;  
 y(idx) = log(1+exp(x(idx)));
@@ -319,6 +358,7 @@ y(idx) = log(1+exp(x(idx)));
 idx = x>=1e2; 
 y(idx) = x(idx);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function y = ilogexp(x)
 %ilogexp = @(x) log(exp(x)-1);
 idx = x<1e2;  
