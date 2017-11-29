@@ -1,24 +1,29 @@
-(A),Javascript,Python,Matlab
-sample1,38,852,31
-sample2,82,909,35
-sample3,145,1142,56
+(A),Javascript,Python,ratio
+sample1,38,852,21.1??
+sample2,82,909,
+sample3,145,1142,
 ,,,
-(B),Javascript,Python,Matlab
-sample1,39,924,2220
-sample2,83,1172,2304
-sample3,154,1309,2573
+(B),Javascript,Python,ratio
+sample1,39,924,
+sample2,83,1172,
+sample3,154,1309,
 ,,,
-(C),Javascript,Python,Matlab
-sample1,158,4413,731
-sample2,135,6924,883
-sample3,132,8700,821
+(C),Javascript,Python,
+sample1,158,4413,
+sample2,135,6924,
+sample3,132,8700,
 "	",,,
-(D),Javascript,Python,Matlab
-sample1,160,4797,1105
-sample2,137,7228,1348
-sample3,135,9058,1109
+(D),Javascript,Python,
+sample1,160,4797,
+sample2,137,7228,
+sample3,135,9058,
 ,,,
-(E),Javascript,Python,Matlab
-sample1,5,268,1100
-sample2,33,1250,4985
-sample3,75,2753,1057000
+(E),Javascript,Python,
+sample1,5,268,
+sample2,33,1250,
+sample3,75,2753,
+,,,
+(F),Javascript,Python,
+sample1, , ,
+sample2, , ,
+sample3, , ,
