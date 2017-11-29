@@ -1,7 +1,7 @@
-function [optN, C, N] = sshist(x,N)
-% [optN, C, N] = sshist(x,N)
+function [optN, C, N] = sshist_v1(x,N)
+% [optN, C, N] = sshist_v1(x,N)
 %
-% Function `sshist' returns optimal number of bins in a histogram
+% Function `sshist_v1' returns optimal number of bins in a histogram
 % used for density estimation.
 % Optimization principle is to minimize expected L2 loss function between 
 % the histogram and an unknown underlying density function.
