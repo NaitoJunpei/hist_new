@@ -1,6 +1,6 @@
 ##########
 # HMM.py  returns the firing rate selected as an alternative hidden state.
-#  needs libraries: (matplotlib, numpy, pandas). 
+#  needs libraries: (matplotlib, numpy, pandas).
 
 # Instruction
 # put HMM.py in a folder on a path.
@@ -53,7 +53,7 @@ def hmm(spike_times):
     argument: spike_times: given in list or ndarray
     returns hidden states (rates) and draw the figure
     observed values is not binary (0,1) but the number of spikes in a given time bin.
-    Poisson distribution is assumed for the number of spikes for a given time bin. 
+    Poisson distribution is assumed for the number of spikes for a given time bin.
     python HMM_v1.py:
     if __name__ == "__main__":
         data = np.loadtxt("data.txt")
