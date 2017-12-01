@@ -35,7 +35,7 @@
 # read a text file of a spike train by data = np.loadtxt("data.txt")
 # this program computes hidden variables given as instantaneous rate, using the HMM and draw a figure of the rate.
 #
-# you need libraries of matplotlib, numpy, and pandas
+# you need libraries of matplotlib, numpy, and math
 # references:
 # Mochizuki and Shinomoto, Analog and digital codes in the brain
 # https://arxiv.org/abs/1311.4035
@@ -53,14 +53,13 @@ def hmm(spike_times):
     argument: spike_times: given in list or ndarray
     returns hidden states (rates) and draw the figure
     observed values is not binary (0,1) but the number of spikes in a given time bin.
-    Poisson distribution is assumed for the number of spikes for a given time bin.
- 
-python HMM_v1.py:
+    Poisson distribution is assumed for the number of spikes for a given time bin. 
+    python HMM_v1.py:
     if __name__ == "__main__":
         data = np.loadtxt("data.txt")
         hmm(spike_times=data)
 
-    # HMM.py: 
+    # HMM.py:
     import numpy as np
     import matplotlib.pyplot as plt
     import math
@@ -180,7 +179,7 @@ def get_hmm_ratefunc(spike_times, bin_width, max_value, min_value):
     # Evaluation in the while loop
     # stops when the change in a model parameter becomes small
     # set flag=1 if the sum of change in a parameter sumcheck becomes smaller than some threshold
-    # or stops if the loops are repeated so many times 
+    # or stops if the loops are repeated so many times
     #####################
 
     loop = 0
@@ -214,7 +213,7 @@ def get_hmm_ratefunc(spike_times, bin_width, max_value, min_value):
     #############################################
     #
     #  Estimate an optimal sequence of states using the Viterbi algorithm
-    # state is represented as 0 or 1 here 
+    # state is represented as 0 or 1 here
     #
     #############################################
 
@@ -268,7 +267,7 @@ def get_vec_Xi(vec_spkt, bin_width):
 ###########################
 #
 # hmm_E_step
-# computes expectation 
+# computes expectation
 #
 ###########################
 def hmm_E_step(vec_Xi, mat_A, vec_lambda, vec_pi):
@@ -279,7 +278,7 @@ def hmm_E_step(vec_Xi, mat_A, vec_lambda, vec_pi):
         vec_lambda: spikes in each bin
         vec_pi: initial probabilities
     returns:
-            mat_Gamma: a matrix consisting of P(state i at time t, vec_Xi |model) 
+            mat_Gamma: a matrix consisting of P(state i at time t, vec_Xi |model)
             mat_Xi: a matrix consisting of P(state i at time t and state j at time t+1, vec_Xi|model)
     """
     mat_emission = get_mat_emission(vec_Xi, vec_lambda)
@@ -362,7 +361,8 @@ def get_beta(mat_A, vec_pi, mat_emission, vec_C):
     # note:
     # when computing mat_beta[t, :], it is not divided by vec_C[t]
     # to avoid duplication when computing mat_Gamma
-    # when computing mat_Xi, it was divided by vec_C[t+1] to make end meets. ##############################
+    # when computing mat_Xi, it was divided by vec_C[t+1] to make end meets.
+    ##############################
     num_of_states = len(vec_pi)
     num_of_obs = len(mat_emission)
 
@@ -412,7 +412,7 @@ def get_Gamma_Xi(mat_A, mat_emission, mat_alpha, mat_beta, vec_C):
         mat_emission: matrix consisting of the probability of having the observation (step,state)
         vec_C: scaling coefficient obtained when computing alpha
     returns:
-            mat_Gamma: a matrix consisting of P(state i at time t, vec_Xi |model) 
+            mat_Gamma: a matrix consisting of P(state i at time t, vec_Xi |model)
             mat_Xi: a matrix consisting of P(state i at time t and state j at time t+1, vec_Xi|model)
     """
     num_of_states = len(mat_emission[0])
@@ -443,7 +443,7 @@ def hmm_M_step(vec_Xi, mat_A, vec_lambda, vec_pi, mat_Gamma, mat_Xi):
     arguments:
         mat_A: transition matrix
         vec_pi: initial probability
-        mat_Gamma: a matrix consisting of P(state i at time t, vec_Xi |model) 
+        mat_Gamma: a matrix consisting of P(state i at time t, vec_Xi |model)
         mat_Xi: a matrix consisting of P(state i at time t and state j at time t+1, vec_Xi|model)
     returns:
         updated parameters: vec_pi_new, vec_lambda_new, mat_A_new
@@ -473,7 +473,7 @@ def hmm_M_step(vec_Xi, mat_A, vec_lambda, vec_pi, mat_Gamma, mat_Xi):
     for t in range(0, num_of_obs - 1):
         total_gamma_a += mat_Gamma[t, :]
     total_xi = np.sum(mat_Xi, axis=0)  # (i,j): 2 by 2 matrix
-    mat_A_new = total_xi / total_gamma_a.T  # division between i-th ones 
+    mat_A_new = total_xi / total_gamma_a.T  # division between i-th ones
     return vec_pi_new, vec_lambda_new, mat_A_new
 
 
@@ -490,7 +490,7 @@ def hmm_Viterbi(vec_Xi, mat_A, vec_lambda, vec_pi):
         vec_lambda: average spike rate in each bin
         vec_pi: initial probability
     returns:
-        vec_hs_seq: optimal state sequence 
+        vec_hs_seq: optimal state sequence
     """
     mat_emission = get_mat_emission(vec_Xi, vec_lambda)
     num_of_states = len(mat_A)
