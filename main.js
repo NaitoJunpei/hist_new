@@ -145,7 +145,7 @@ function Main() {
   time_old[7] = new Date().getTime();
   
   //document.getElementById("time").innerHTML = "<font size='2pt' face='Arial'>Spike Raster : " + (time_old[1]-time_old[0]) + " ms<br>(A) : " + (time_old[2]-time_old[1]) + " ms<br>(B)-(A) : " + (time_old[3]-time_old[2]) + " ms<br>(C) : " + (time_old[4]-time_old[3]) + " ms<br>(D)-(C) : " + (time_old[5]-time_old[4]) + " ms<br>(E) : " + (time_old[6]-time_old[5]) + " ms<br>(F) : " + (time_old[7]-time_old[6]) + " ms</font>";
-  document.getElementById("time").innerHTML = "<font size='2pt' face='Arial'>Computation times of Javascript codes: (A) : " + (time_old[2]-time_old[1]) + " ms; (B)-(A) : " + (time_old[3]-time_old[2]) + " ms; (C) : " + (time_old[4]-time_old[3]) + " ms; (D)-(C) : " + (time_old[5]-time_old[4]) + " ms; (E) : " + (time_old[6]-time_old[5]) + " ms; (F) : " + (time_old[7]-time_old[6]) + " ms</font>";
+  document.getElementById("time").innerHTML = "<font size='2pt' face='Arial'>Computation times of the Javascript codes: (A) : " + (time_old[2]-time_old[1]) + " ms; (B)-(A) : " + (time_old[3]-time_old[2]) + " ms; (C) : " + (time_old[4]-time_old[3]) + " ms; (D)-(C) : " + (time_old[5]-time_old[4]) + " ms; (E) : " + (time_old[6]-time_old[5]) + " ms; (F) : " + (time_old[7]-time_old[6]) + " ms</font>";
   
   //DrawGraph(spike_time, SS(spike_time), "SS");  // old mathod
   //DrawGraph(spike_time, OS(spike_time), "OS");  // new method
