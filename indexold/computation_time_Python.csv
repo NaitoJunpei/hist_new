@@ -8,22 +8,22 @@ sample1,26,856,32.9,,
 sample2,75,983,13.1,,
 sample3,152,1132,7.4,,
 ,,,,,
-(C),Javascript,Python,ratio,Python,ratio
+(C),Javascript,Python,ratio,Python(v3),ratio
 sample1,97,4413,45.5,61,0.6
 sample2,132,6924,52.5,78,0.6
 sample3,116,8700,75.0,59,0.5
 "	",,,,,
-(D),Javascript,Python,ratio,Python,ratio
+(D),Javascript,Python,ratio,Python(v3),ratio
 sample1,99,4797,48.5,203,2.1
 sample2,134,7228,53.9,228,1.7
 sample3,118,9058,76.8,234,2.0
 ,,,,,
-(E),Javascript,Python,ratio,Python,ratio
+(E),Javascript,Python,ratio,Python(v2),ratio
 sample1,4,268,67.0,81,20.3
 sample2,11,1250,113.6,464,42.2
 sample3,73,2753,37.7,950,13.0
 ,,,,,
-(F),Javascript,Python,,Python,ratio
+(F),Javascript,Python,,Python(v2),ratio
 sample1,3,-,,103,34.3
 sample2,6,-,,198,33.0
 sample3,35,-,,337,9.6
