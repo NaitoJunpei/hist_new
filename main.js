@@ -251,8 +251,8 @@ function SSOS(spike_time) {
    cost_SS += (2.0 * av - (va - av * av)) / (binsize * binsize);
    cost_OS += (2.0 * w_av - (va - av * av)) / (binsize*binsize);
   }
-  cost_SS /= max_count
-  cost_OS /= max_count
+  cost_SS /= max_count;
+  cost_OS /= max_count;
   // updates if the cost is smaller
   if (cost_SS < cost_SS_min || bin_num == 1) {
    cost_SS_min = cost_SS;
