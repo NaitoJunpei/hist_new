@@ -63,7 +63,7 @@ function RandomData() {
     
 var Base=30.0;
 var Amplitude=10.0;
-var TIME=10.0;
+var TIME=15.0;
 var Period=[2.0/Math.PI,1.41421356/Math.PI,0.8989898/Math.PI];
 
 function Rate_integral(prev_time,new_time){
