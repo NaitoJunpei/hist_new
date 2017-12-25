@@ -63,7 +63,7 @@ function RandomData() {
     
 var Base=30.0;
 var Amplitude=10.0;
-var TIME=15.0;
+var TIME=50.0/3;
 var Period=[2.0/Math.PI,1.41421356/Math.PI,0.8989898/Math.PI];
 
 function Rate_integral(prev_time,new_time){
@@ -147,7 +147,7 @@ function Main() {
   //document.getElementById("time").innerHTML = "<font size='2pt' face='Arial'>Spike Raster : " + (time_old[1]-time_old[0]) + " ms<br>(A) : " + (time_old[2]-time_old[1]) + " ms<br>(B)-(A) : " + (time_old[3]-time_old[2]) + " ms<br>(C) : " + (time_old[4]-time_old[3]) + " ms<br>(D)-(C) : " + (time_old[5]-time_old[4]) + " ms<br>(E) : " + (time_old[6]-time_old[5]) + " ms<br>(F) : " + (time_old[7]-time_old[6]) + " ms</font>";
   document.getElementById("time").innerHTML = "<font size='2pt' face='Arial'>Computation times of the Javascript codes: (A) : " + (time_old[2]-time_old[1]) + " ms; (B)-(A) : " + (time_old[3]-time_old[2]) + " ms; (C) : " + (time_old[4]-time_old[3]) + " ms; (D)-(C) : " + (time_old[5]-time_old[4]) + " ms; (E) : " + (time_old[6]-time_old[5]) + " ms; (F) : " + (time_old[7]-time_old[6]) + " ms</font>";
   
-  //DrawGraph(spike_time, SS(spike_time), "SS");  // old mathod
+  //DrawGraph(spike_time, SS(spike_time), "SS");  // old method
   //DrawGraph(spike_time, OS(spike_time), "OS");  // new method
   //DrawGraph(spike_time, Kernel(spike_time), "Kernel"); // kernel smoother
   //DrawGraph(spike_time, Kernel(spike_time), "Kernel2"); // kernel smoother with reflection boundary
