@@ -55,9 +55,9 @@ EMMethod <- function(ISI, beta0) {
 
         indexes <- which(ISI[1:(N - 1)] > 0)
 
-        beta_new <- sum((kalman[2,][indexes + 1] + kalman[2,][indexes] - 2 * kalman[3,][indexes]
-            + (kalman[1,][indexes + 1] - kalman[1,][indexes])
-            * (kalman[1,][indexes + 1] - kalman[1,][indexes])) / ISI[indexes])
+        beta_new <- sum((kalman[2,indexes + 1] + kalman[2,indexes] - 2 * kalman[3,indexes]
+            + (kalman[1,indexes + 1] - kalman[1,indexes])
+            * (kalman[1,indexes + 1] - kalman[1,indexes])) / ISI[indexes])
 
         t0 <- N - 1 - length(indexes)
         beta_new <- (N - t0 - 1) / (2 * beta_new)
@@ -88,32 +88,32 @@ kalmanFilter <- function(ISI, beta) {
     VL_N <- numeric(N)
     COVL_N <- numeric(N)
 
-    EL[1,][1] <- (A + sqrt(A * A + 4 * IVL)) / 2
-    VL[1,][1] <- 1 / (1 / IVL + 1 / (EL[1,][1])^2)
+    EL[1,1] <- (A + sqrt(A * A + 4 * IVL)) / 2
+    VL[1,1] <- 1 / (1 / IVL + 1 / (EL[1,1])^2)
 
     # prediction and filtering
     for (i in 1:(N - 1)) {
-        EL[2,][i] <- EL[1,][i]
-        VL[2,][i] <- VL[1,][i] + ISI[i] / (2 * beta)
+        EL[2,i] <- EL[1,i]
+        VL[2,i] <- VL[1,i] + ISI[i] / (2 * beta)
 
-        A <- EL[2,][i] - ISI[i + 1] * VL[2,][i]
-        EL[1,][i + 1] <- (A + sqrt(A * A + 4 * VL[2,][i])) / 2
-        VL[1,][i + 1] <- 1 / (1 / VL[2,][i] + 1 / (EL[1,][i + 1])^2)
+        A <- EL[2,i] - ISI[i + 1] * VL[2,i]
+        EL[1,i + 1] <- (A + sqrt(A * A + 4 * VL[2,i])) / 2
+        VL[1,i + 1] <- 1 / (1 / VL[2,i] + 1 / (EL[1,i + 1])^2)
     }
 
     # smoothing
-    EL_N[N] <- EL[1,][N]
-    VL_N[N] <- VL[1,][N]
+    EL_N[N] <- EL[1,N]
+    VL_N[N] <- VL[1,N]
 
     for (i in 1:(N - 1)) {
         index <- N - i
-        H <- VL[1,][index] / VL[2,][index]
+        H <- VL[1,index] / VL[2,index]
 
-        EL_N[index] <- EL[1,][index] + H * (EL_N[index + 1] - EL[2,][index])
-        VL_N[index] <- VL[1,][index] + H * H * (VL_N[index + 1] - VL[2,][index])
+        EL_N[index] <- EL[1,index] + H * (EL_N[index + 1] - EL[2,index])
+        VL_N[index] <- VL[1,index] + H * H * (VL_N[index + 1] - VL[2,index])
     }
 
-    COVL_N = c((VL[1,][1:(N - 1)] / VL[2,][1:(N-1)]) * VL_N[2:N], 0)
+    COVL_N = c((VL[1,1:(N - 1)] / VL[2,1:(N-1)]) * VL_N[2:N], 0)
 
     return (matrix(c(EL_N, VL_N, COVL_N), nrow=3, ncol=N, byrow=TRUE))
 }
