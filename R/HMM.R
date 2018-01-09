@@ -18,6 +18,7 @@ HMM <- function(spike_time)
 
 # determine the times of initiation and termination
 # bin size =  5*(inter-spike interval)
+
 onset <- spike_time[1] - 0.001 * (spike_time[length(spike_time)] - spike_time[1])
 offset <- spike_time[length(spike_time)] + 0.001 * (spike_time[length(spike_time)] - spike_time[1])
 optw <- (offset-onset)/(length(spike_time)) * 5
@@ -25,7 +26,6 @@ optw <- (offset-onset)/(length(spike_time)) * 5
 # input: sample data vector and bin size
 # compute the rate in each bin
 rate_func <- get_hmm_ratefunc(spike_time, optw)
-return(rate_func)
 
 # draw a graph
 drawHMM(rate_func)
@@ -66,7 +66,7 @@ get_mat_emission <- function(vec_Xi, vec_lambda){
   mat_emission <- matrix(numeric(length(vec_Xi)*length(vec_lambda)), nrow=length(vec_Xi), ncol=length(vec_lambda))
   for(n in 1:length(vec_Xi)){
     for(i in 1:length(vec_lambda)){
-      mat_emission[n,i] <- vec_lambda[i]^vec_Xi[n]*exp(-1.0*vec_lambda[i]/factorial(vec_Xi[n]))
+      mat_emission[n,i] <- vec_lambda[i]^vec_Xi[n]*exp(-1.0*vec_lambda[i])/factorial(vec_Xi[n])
     }
   }
   return(mat_emission)
@@ -151,7 +151,11 @@ get_Gamma_Xi <- function(mat_A, mat_emission, mat_alpha, mat_beta, vec_C)
   mat_Gamma <- mat_alpha * mat_beta
   mat_Xi <- array(numeric((num_of_obs-1)*num_of_states*num_of_states),dim=c(num_of_obs-1, num_of_states, num_of_states))
   for(m in 1:(num_of_obs-1)){
-    mat_Xi[m,,] <- mat_A %*% t(mat_alpha[m,,drop=F]) * mat_emission[m+1,] * mat_beta[m+1,] / vec_C[m+1]
+    for(i in 1:num_of_states){
+      for(j in 1:num_of_states){
+        mat_Xi[m,i,j] <- mat_alpha[m,i]*mat_emission[m+1,j]*mat_A[i,j]*mat_beta[m+1,j]/vec_C[m+1]
+      }
+    }
   }
   return(list(mat_Gamma, mat_Xi))
 }
@@ -381,6 +385,6 @@ get_hmm_ratefunc <- function(spike_time, bin_width)
 # returns:
 #   nothing, but draws a figure
 drawHMM <- function(rate_func){
-  
+  barplot(rate_func[,2], border=F, space=0)
 }
               
