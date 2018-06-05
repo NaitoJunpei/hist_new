@@ -154,7 +154,7 @@ function Main() {
   //DrawGraph(spike_time, 0, "HMM"); // Hidden Markov Model
 }
 
-// processing input data (sorting is not implemented here)
+// processing input data
 function PostData(spike_time) {
   var data_text = document.data.spikes.value.replace(/\r?\n/g," ").replace(/^\s+|\s+$/g,"");
   var data_seq = data_text.split(/[^0-9\.]+/);
@@ -163,6 +163,12 @@ function PostData(spike_time) {
     spike_time[i] = Number(data_seq[i]);
     // document.data.spikes.value += Math.round(spike_time[i]*1000) + " ";
   }
+  // sorting
+  spike_time.sort(function(a,b){
+      if( a < b ) return -1;
+      if( a > b ) return 1;
+      return 0;
+  });
 }
 
 function SpikeRaster(spike_time){

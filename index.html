@@ -16,14 +16,14 @@
 <title>HISTOGRAMS</title>
 </head>
 <body onload="RandomData(); Main();" style="font-family:Optima,Arial">
-    <div id="fb-root"></div>
-    <script>(function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v2.4";
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));</script>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.11';
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
 <div style="width:920" align="left">
   <table width="804">
     <tbody>
@@ -32,8 +32,7 @@
         <td bgcolor="#ffffff" width="300">&#160;
 <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.ton.scphys.kyoto-u.ac.jp/~shino/histograms/" data-size="default" data-count="vertical">Tweet</a>
   <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
-  <div class="fb-like" data-colorscheme="light" data-href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/histograms/" data-layout="box_count" data-action="recommend" data-share="false"></div>
-<!-- 共有ボタン を表示したい位置に次のタグを貼り付けてください。 -->
+  <div class="fb-share-button" data-href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/histograms/" data-layout="button_count" data-size="small" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fwww.ton.scphys.kyoto-u.ac.jp%2F%7Eshino%2Fhistograms%2F&amp;src=sdkpreparse">Share</a></div>
 <div class="g-plus" data-action="share" data-height="24" data-href="http://www.ton.scphys.kyoto-u.ac.jp/~shino/histograms/"></div>
         </td>
       </tr>
@@ -43,12 +42,7 @@
   <table>
     <tbody>
       <tr>
-        <td bgcolor="#ffffcc" width="800"><font size="2pt" face="Arial">These tools provide the best histogram, kernel density estimation, Bayesian
-        estimator, and Hidden Markov model, for a given series of event times. Paste
-        or upload the event times, listed in order of increasing time, separated
-        by a comma or a space. Your data will not leave your computer, because
-        the computation is carried out on your computer. The theory applied here
-        for the purpose of optimizing the estimators can be found in the references.</font></td>
+        <td bgcolor="#ffffcc" width="800"><font size="2pt" face="Arial">These tools provide the best histogram, kernel density estimation, Bayesian estimator, and Hidden Markov model, for a given series of event times. Paste or upload the event times, listed in order of increasing time, separated by a comma or a space. Your data will not leave your computer, because the computation is carried out on your computer. Matlab, Python, and R codes are also available for download below. The theory applied here for the purpose of optimizing the estimators can be found in the references.</font></td>
       </tr>
     </tbody>
   </table>
@@ -77,7 +71,7 @@ obj1.addEventListener("change",function(evt){
 </script>
 
 <br />
-  <font size = "2pt">&nbsp;&nbsp;&nbsp;&nbsp;<textarea name="spikes" rows="3" cols="120" style="font-size:9.5pt"></textarea><br />
+  <font size = "2pt">&nbsp;&nbsp;&nbsp;&nbsp;<textarea name="spikes" rows="3" style="width:785px;font-size:9.5pt"></textarea><br />
   <br />
   </font><font size="3"><strong>2. </strong></font><input type="button" style="font:10.5pt Arial;" value="Estimate the rate." onclick="Main();" />
 </font>
@@ -184,7 +178,7 @@ obj1.addEventListener("change",function(evt){
   <table>
     <tbody>
       <tr>
-        <td align="center"><font size="2pt" face="Arial"><a href="indexold/histograms_history.html" target="_blank">Version 3.0</a> : 2017/12/07</font> &#160;</td>
+        <td align="center"><font size="2pt" face="Arial"><a href="indexold/histograms_history.html" target="_blank">Version 3.0</a> : 2018/01/10</font> &#160;</td>
         <td align="center"><font size="2pt" face="Arial"><font color="#000000" size="2">The number of visitors since 2017/05/16: <span lang="EN-US" style="font-size:11.0pt;font-family:
 Arial"><img border="0" width="40" height="10" id="_x0000_i1030" src="http://www.ton.scphys.kyoto-u.ac.jp/~shino/counter/count.cgi?histograms" /></span></font></font></td>
       </tr>
