@@ -49,8 +49,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.fft as fft
 import math
+import time
 
 def KDE(spike_times) :
+    start = time.time()
     spike_times = np.array(sorted(spike_times))
     max_value = max(spike_times)
     min_value = min(spike_times)
@@ -123,7 +125,8 @@ def KDE(spike_times) :
         k += 1
 
     y = y * len(spike_times)
-
+    end = time.time()
+    print(end - start)
     drawKDE(y, tin)
 
     return y, tin, optw
@@ -184,7 +187,7 @@ def fftkernel(x, w) :
     f = (np.array(range(0, n)) + 0.0) / n
     f = np.r_[-f[range(0, int(n / 2) + 1)], f[range(int(n / 2), 1, -1)]]
 
-    K = [math.exp(-0.5 * ((w * 2 * math.pi * f_i) ** 2)) for f_i in f]
+    K = np.exp(-0.5 * ((w * 2 * math.pi * f) ** 2))
 
     y = fft.ifft(X * K, n)
 

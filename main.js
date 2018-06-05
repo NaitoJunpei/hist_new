@@ -1053,9 +1053,15 @@ function OutputResults_OS() {
 }
 
 function xaxisForKernel(spike_time) {
- var x = new Array(res_graph);
  var data_max = spike_time[spike_time.length - 1];
  var data_min = spike_time[0];
+ var dt_samp = spike_time[1]-spike_time[0];
+ for (var i=0;i<spike_time.length-1;i++){
+  if(dt_samp>spike_time[i+1]-spike_time[i]) dt_samp = spike_time[i+1]-spike_time[i];
+ }
+
+ var res_graph = Math.min(Math.ceil((data_max - data_min) / dt_samp), 1000);
+ var x = new Array(res_graph);
  x[0] = data_min;
  for (var i = 0; i < res_graph - 1; i++) {
   x[i + 1] = x[i] + (data_max - data_min) / (res_graph - 1);
@@ -1126,16 +1132,20 @@ function kern2(spike_time, width, y) {
 function OutputResults_Kernel() {
  var spike_time = new Array();
  PostData(spike_time);
- var opt = Kernel(spike_time);
- var opty = new Array();
- kern(spike_time, opt, opty);
+ var opty1 = new Array();
+ var opty2 = new Array();
+ var res = kernel_rate(spike_time, opty1, opty2);
+ //var opt = Kernel(spike_time);
+ var opt = res[1];
+ //kern(spike_time, opt, opty);
+ 
  var xaxis = xaxisForKernel(spike_time);
 
  //save as csv
  var filemessage = "X-AXIS,Y-AXIS\\n";
  filemessage += xaxis[0].toFixed(3) + ",0\\n";
  for (var i = 0; i < xaxis.length; i++) {
-  filemessage += xaxis[i].toFixed(3) + "," + opty[i].toFixed(3) + "\\n";
+  filemessage += xaxis[i].toFixed(3) + "," + opty1[i].toFixed(3) + "\\n";
  }
  filemessage += xaxis[xaxis.length - 1].toFixed(3) + ",0\\n";
 
@@ -1151,7 +1161,7 @@ function OutputResults_Kernel() {
  WIN_RESULTS.document.writeln("<table border=1><tr align=center><td width=150> X-AXIS (time)  </td><td width=150> Y-AXIS (density) </td></tr>");
  WIN_RESULTS.document.writeln("<tr align=right><td>"+xaxis[0].toFixed(3)+"</td><td>0.00</td></tr>");
  for (var i=0;i<xaxis.length;i++) {
-  WIN_RESULTS.document.writeln("<tr align=right><td>"+xaxis[i].toFixed(3)+"</td><td>" + opty[i].toFixed(3) + "</td></tr>");
+	 WIN_RESULTS.document.writeln("<tr align=right><td>"+xaxis[i].toFixed(3)+"</td><td>" + (opty1[i] * spike_time.length).toFixed(3) + "</td></tr>");
  }
  WIN_RESULTS.document.writeln("<tr align=right><td>"+xaxis[xaxis.length-1].toFixed(3)+"</td><td>0.00</td></tr>");
  WIN_RESULTS.document.writeln("</table><br>");
@@ -1161,16 +1171,20 @@ function OutputResults_Kernel() {
 function OutputResults_Kernel2() {
  var spike_time = new Array();
  PostData(spike_time);
- var opt = Kernel(spike_time);
- var opty = new Array();
- kern2(spike_time, opt, opty);
+ var opty1 = new Array();
+ var opty2 = new Array();
+ var res = kernel_rate(spike_time, opty1, opty2);
+ //var opt = Kernel(spike_time);
+ var opt = res[1];
+ //kern2(spike_time, opt, opty);
+
  var xaxis = xaxisForKernel(spike_time);
 
  //save as csv
  var filemessage = "X-AXIS,Y-AXIS\\n";
  filemessage += xaxis[0].toFixed(3) + ",0\\n";
  for (var i = 0; i < xaxis.length; i++) {
-  filemessage += xaxis[i].toFixed(3) + "," + opty[i].toFixed(3) + "\\n";
+  filemessage += xaxis[i].toFixed(3) + "," + opty2[i].toFixed(3) + "\\n";
  }
  filemessage += spike_time[spike_time.length - 1] + ",0\\n";
  
@@ -1185,7 +1199,7 @@ function OutputResults_Kernel2() {
  WIN_RESULTS.document.writeln("<table border=1><tr align=center><td width=150> X-AXIS (time)  </td><td> Y-AXIS (density) </td></tr>");
  WIN_RESULTS.document.writeln("<tr align=right><td>"+xaxis[0].toFixed(3)+"</td><td>0.00</td></tr>");
  for (var i=0;i<xaxis.length;i++) {
-  WIN_RESULTS.document.writeln("<tr align=right><td>"+xaxis[i].toFixed(3)+"</td><td>" + opty[i].toFixed(3) + "</td></tr>");
+	 WIN_RESULTS.document.writeln("<tr align=right><td>"+xaxis[i].toFixed(3)+"</td><td>" + (opty2[i] * spike_time.length).toFixed(3) + "</td></tr>");
  }
  WIN_RESULTS.document.writeln("<tr align=right><td>"+xaxis[xaxis.length -1].toFixed(3)+"</td><td>0.00</td></tr>");
  WIN_RESULTS.document.writeln("</table><br>");

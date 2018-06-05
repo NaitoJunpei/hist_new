@@ -50,9 +50,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.fft as fft
 import math
+import time
 
 
 def KDERB(spike_times) :
+    start = time.time()
     spike_times = np.array(sorted(spike_times))
     max_value = max(spike_times)
     min_value = min(spike_times)
@@ -126,6 +128,9 @@ def KDERB(spike_times) :
 
     y = y * len(spike_times)
 
+    end = time.time()
+    print(end - start)
+
     drawKDERB(y, tin)
     return y, tin, optw
         
@@ -156,12 +161,13 @@ def CostFunction(y_hist, N, w, dt) :
     remlen = len(y_hist) - halflen
     addleft = fftkernel(list(np.r_[np.zeros(remlen), y_hist[0:halflen]]), w / dt)
     addright = fftkernel(list(np.r_[y_hist[halflen : len(y_hist)], np.zeros(remlen)]), w / dt)
-    yh = yh + np.r_[np.fliplr([addleft[0:halflen]])[0], np.zeros(remlen)] + np.r_[np.zeros(remlen), np.fliplr([addright[halflen:len(addright)]])[0]]
 
     # formula for density
     C = sum(yh * yh) * dt - 2 * sum(yh * y_hist) * dt + 2 * 1 / (math.sqrt(2 * math.pi) * w * N)
     C *= N * N
 
+    yh = yh + np.r_[np.fliplr([addleft[0:halflen]])[0], np.zeros(remlen)] + np.r_[np.zeros(remlen), np.fliplr([addright[halflen:len(addright)]])[0]]
+    
     return C, yh
 
 def fftkernel(x, w) :
@@ -192,7 +198,7 @@ def fftkernel(x, w) :
     f = (np.array(range(0, n)) + 0.0) / n
     f = np.r_[-f[range(0, int(n / 2) + 1)], f[range(int(n / 2) - 1, 0, -1)]]
 
-    K = [math.exp(-0.5 * ((w * 2 * math.pi * f_i) ** 2)) for f_i in f]
+    K = np.exp(-0.5 * ((w * 2 * math.pi * f) ** 2))
 
     y = fft.ifft(X * K, n)
 

@@ -161,7 +161,6 @@ def get_hmm_ratefunc(spike_times, bin_width, max_value, min_value):
     vec_spkt = np.array([spike - min_value for spike in spike_times])
 
     vec_Xi = get_vec_Xi(vec_spkt, bin_width)
-
     #########################################################
     #
     # Optimizing the model parameters using the Baum-Welch algorithm
@@ -419,7 +418,6 @@ def get_Gamma_Xi(mat_A, mat_emission, mat_alpha, mat_beta, vec_C):
     num_of_obs = len(mat_emission)
 
     mat_Gamma = mat_alpha * mat_beta
-
     mat_Xi = np.empty((num_of_obs - 1, num_of_states, num_of_states))
     for t in range(0, num_of_obs - 1):
         mat_Xi[t, :, :] = mat_alpha[t, :].reshape(
@@ -460,6 +458,7 @@ def hmm_M_step(vec_Xi, mat_A, vec_lambda, vec_pi, mat_Gamma, mat_Xi):
     # vec_pi
     ################
     vec_pi_new = mat_Gamma[0] / np.sum(mat_Gamma[0])
+    print(mat_Gamma[0])
 
     #################
     # vec_lambda
