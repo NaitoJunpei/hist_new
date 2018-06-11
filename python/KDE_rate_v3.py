@@ -62,7 +62,7 @@ def KDE(spike_times) :
     dt_samp = diff_spike[np.nonzero(diff_spike)][0]
     
     tin = np.linspace(min_value, max_value, min(math.ceil(T / dt_samp), 1e3))
-    spike_ab = spike_times[np.nonzero((spike_times >= min(tin)) * (spike_times <= max(tin)))]
+    spike_ab = spike_times[np.nonzero((spike_times >= min(tin)) * (spike_times <= max(tin)))[0]]
 
     dt = min(np.diff(tin))
 
@@ -185,7 +185,7 @@ def fftkernel(x, w) :
     X = fft.fft(x, n)
 
     f = (np.array(range(0, n)) + 0.0) / n
-    f = np.r_[-f[range(0, int(n / 2) + 1)], f[range(int(n / 2), 1, -1)]]
+    f = np.r_[-f[range(0, int(n / 2) + 1)], f[range(int(n / 2) - 1, 0, -1)]]
 
     K = np.exp(-0.5 * ((w * 2 * math.pi * f) ** 2))
 

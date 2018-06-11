@@ -601,7 +601,7 @@ function kernel_rate(spike_time, y1, y2){
     var t = new Array();
     t[0] = spike_time[0]
     for(var i=0; i<t_num-1;i++){
-     t[i+1]=t[i]+T/(t_num);
+     t[i+1]=t[i]+T/(t_num-1);
     }
  var dt = t[1]-t[0];
  for(var i=0;i<t.length-1;i++){
@@ -617,8 +617,9 @@ function kernel_rate(spike_time, y1, y2){
      for(var j=0;j<t.length-1;j++){
          if(spike_time[i]>=t[j]-dt/2 && spike_time[i]<t[j+1]-dt/2) y_hist[j]++;
      }
-     if(spike_time[i]>=t[t.length-1]-dt/2) y_hist[t.length-1]++;
+     if(spike_time[i]==t[t.length-1]-dt/2) y_hist[t.length-1]++;
     }
+    console.log(y_hist[0]);
  var L = y_hist.length;
  var N = 0;
  for(var i=0;i<L;i++){
@@ -1151,7 +1152,7 @@ function OutputResults_Kernel() {
  var filemessage = "X-AXIS,Y-AXIS\\n";
  filemessage += xaxis[0].toFixed(3) + ",0\\n";
  for (var i = 0; i < xaxis.length; i++) {
-  filemessage += xaxis[i].toFixed(3) + "," + opty1[i].toFixed(3) + "\\n";
+  filemessage += xaxis[i].toFixed(3) + "," + (opty1[i] * spike_time.length).toFixed(3) + "\\n";
  }
  filemessage += xaxis[xaxis.length - 1].toFixed(3) + ",0\\n";
 
@@ -1190,7 +1191,7 @@ function OutputResults_Kernel2() {
  var filemessage = "X-AXIS,Y-AXIS\\n";
  filemessage += xaxis[0].toFixed(3) + ",0\\n";
  for (var i = 0; i < xaxis.length; i++) {
-  filemessage += xaxis[i].toFixed(3) + "," + opty2[i].toFixed(3) + "\\n";
+  filemessage += xaxis[i].toFixed(3) + "," + (opty2[i] * spike_time.length).toFixed(3) + "\\n";
  }
  filemessage += spike_time[spike_time.length - 1] + ",0\\n";
  
