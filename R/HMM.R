@@ -1,6 +1,6 @@
 HMM <- function(spike_time)
 {
-# Function `HMM_v3' returns the firing rate selected as an alternative hidden state.
+# Function `HMM' returns the firing rate selected as an alternative hidden state.
 # Original paper:
 # Mochizuki and Shinomoto, Analog and digital codes in the brain
 # https://arxiv.org/abs/1311.4035
@@ -19,6 +19,7 @@ HMM <- function(spike_time)
 # determine the times of initiation and termination
 # bin size =  5*(inter-spike interval)
 
+sort(spike_time)    # sort
 onset <- spike_time[1] - 0.001 * (spike_time[length(spike_time)] - spike_time[1])
 offset <- spike_time[length(spike_time)] + 0.001 * (spike_time[length(spike_time)] - spike_time[1])
 optw <- (offset-onset)/(length(spike_time)) * 5
