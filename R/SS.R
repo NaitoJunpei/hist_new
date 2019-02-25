@@ -1,6 +1,6 @@
 SS <- function(spike_time)
 {
-sort(spike_time)    # sort
+spike_time <- sort(spike_time)    # sort
 min_sp <- min(spike_time)   # the time of the first spike
 max_sp <- max(spike_time)   # the time of the last spike
 onset = min_sp - 0.001 * (max_sp - min_sp)

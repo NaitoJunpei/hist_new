@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 ##########
 # BRE_v3.py returns Bayesian estimation of the rate of event occurrence.
 # needs libraries: (matplotlib, numpy).

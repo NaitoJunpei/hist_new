@@ -1,5 +1,5 @@
 KDERB <- function(spike_times) {
-    sort(spike_time)    # sort
+    spike_times <- sort(spike_times)    # sort
     max_value <- max(spike_times)
     min_value <- min(spike_times)
     T <- max_value - min_value
